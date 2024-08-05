@@ -41,7 +41,6 @@ void IOThread::loop()
 {
     mThreadId = GetThreadId();
     mEventLoop = new EventLoop();
-    std::cout << mEventLoop << std::endl;
     {
         std::lock_guard<std::mutex> lock(mInitMutex);
         mInitDone = true;
@@ -49,7 +48,6 @@ void IOThread::loop()
     mInitCond.notify_one();
 
     // 让IO 线程等待，直到主线程主动启动
-    DEBUGLOG("IOThread [%d] wait start semaphore", mThreadId)
     {
         std::unique_lock<std::mutex> lock(mStartMutex);
         mStartCond.wait(lock, [this](){ return mStart; });

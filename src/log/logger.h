@@ -12,22 +12,19 @@
 #define DEBUGLOG(str, ...) \
     if (ythe::Logger::GetInstance()->GetLogLevel() && ythe::Logger::GetInstance()->GetLogLevel() <= ythe::DEBUG) \
     { \
-    ythe::Logger::GetInstance()->PushLog( GetLogEvent(ythe::DEBUG) \
-      + "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" + ythe::formatString(str, ##__VA_ARGS__) + "\n");\
+    ythe::Logger::GetInstance()->PushLog( GetLogEvent(ythe::DEBUG) + ythe::formatString(str, ##__VA_ARGS__) + "\n");\
     } \
 
 #define INFOLOG(str, ...) \
     if (ythe::Logger::GetInstance()->GetLogLevel() && ythe::Logger::GetInstance()->GetLogLevel() <= ythe::INFO) \
     { \
-    ythe::Logger::GetInstance()->PushLog( GetLogEvent(ythe::INFO) \
-      + "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" + ythe::formatString(str, ##__VA_ARGS__) + "\n");\
+    ythe::Logger::GetInstance()->PushLog( GetLogEvent(ythe::INFO) + ythe::formatString(str, ##__VA_ARGS__) + "\n");\
     } \
 
 #define ERRORLOG(str, ...) \
     if (ythe::Logger::GetInstance()->GetLogLevel() && ythe::Logger::GetInstance()->GetLogLevel() <= ythe::ERROR) \
     { \
-    ythe::Logger::GetInstance()->PushLog( GetLogEvent(ythe::ERROR) \
-      + "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" + ythe::formatString(str, ##__VA_ARGS__) + "\n");\
+    ythe::Logger::GetInstance()->PushLog( GetLogEvent(ythe::ERROR) + ythe::formatString(str, ##__VA_ARGS__) + "\n");\
     } \
 
 

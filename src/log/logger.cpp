@@ -42,6 +42,7 @@ std::string GetLogEvent(LogLevel logLevel)
     std::stringstream ss;
     ss << "[" << logLevelToString(logLevel) << "]\t"
        << "[" << nowTimeStr << "]\t"
+       << "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t"
        << "[" << "Pid: " << pid << ", " << "ThreadId: " << threadId << "]\t";
 
     return ss.str();

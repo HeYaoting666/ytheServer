@@ -117,18 +117,17 @@ void EventLoop::addFdEventToEpoll(FdEvent* fdEvent)
     int op = EPOLL_CTL_ADD;
     if(mListenFds.find(fdEvent->GetFd()) != mListenFds.end())
         op = EPOLL_CTL_MOD;
-    
-    epoll_event epollEvent = fdEvent->GetEpollEvent();
-    INFOLOG("fd[%d], events: %s", fdEvent->GetFd(), EpollEventsToString(epollEvent.events).c_str())
 
+    epoll_event epollEvent = fdEvent->GetEpollEvent();
+    
     int rt = epoll_ctl(mEpollfd, op, fdEvent->GetFd(), &epollEvent);
     if (rt == -1) {
         ERRORLOG("failed epoll_ctl when add fd[%d], errno=%d, error=%s", fdEvent->GetFd(), errno, strerror(errno));
         exit(0);
     }
-
     mListenFds.insert(fdEvent->GetFd());
-    DEBUGLOG("add event success, fd[%d]", fdEvent->GetFd())
+
+    INFOLOG("add event success fd[%d], events: %s", fdEvent->GetFd(), EpollEventsToString(epollEvent.events).c_str())
 }
 
 void EventLoop::DeleteFdEventFromEpoll(FdEvent* fdEvent)

@@ -7,7 +7,7 @@ namespace ythe {
 Timer::Timer(): FdEvent()
 {
     mFd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-    DEBUGLOG("timer fd[%d]", mFd)
+    INFOLOG("create timer fd[%d]", mFd)
 
     // 设置 mFd 监听事件和回调函数
     SetFdEvent(TriggerEvent::IN_EVENT, std::bind(&Timer::onTimer, this));

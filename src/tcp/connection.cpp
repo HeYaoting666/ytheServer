@@ -82,10 +82,18 @@ void TCPConnection::onRead()
         clear();
         return;
     }
+
+    execute();
 }
 
 void TCPConnection::onWrite()
 {
+
+}
+
+void TCPConnection::execute()
+{
+    
 }
 
 void TCPConnection::clear()

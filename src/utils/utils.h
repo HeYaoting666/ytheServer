@@ -12,17 +12,17 @@
 
 namespace ythe {
 
-pid_t GetPid();
+pid_t       GetPid();
 
-pid_t GetThreadId();
+pid_t       GetThreadId();
 
 std::string GetCurrentDateTime();
 
-int64_t GetNowMs();
+int64_t     GetNowMs();
 
 std::string ConvertMillisToDateTime(long long millis);
 
-uint32_t GetInt32FromNetByte(const char* buf);
+uint32_t    GetInt32FromNetByte(const char* buf);
 
 std::string EpollEventsToString(uint32_t events);
 }

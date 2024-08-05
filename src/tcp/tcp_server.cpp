@@ -11,7 +11,6 @@ TCPServer::TCPServer(const IPNetAddr::sp& localAddrr)
 
     // 初始化 主线程 EventLoop
     mEventLoop = new EventLoop();
-    std::cout << mEventLoop << std::endl;
 
     // 初始化 监听套接字事件 mListenEvent 不使用ET模式, 加入到epoll事件表中
     mListenEvent = new FdEvent(mAcceptor->GetListenFd());
@@ -63,6 +62,7 @@ void TCPServer::onAccept()
     // 将 clientFd 和 clientAddr 绑定到从属线程的eventloop中
     auto conn = std::make_shared<TCPConnection>(
         clientFd, threadHander->GetEventLoop(), 128, clientAddr, mLocalAddr);
+    conn->SetState(Connected);
     mConnClients.insert(conn);
     INFOLOG("TCPServer success get client, addr[%s], fd[%d]", clientAddr->ToString().c_str(), clientFd)
 }
