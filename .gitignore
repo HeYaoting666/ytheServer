@@ -1,0 +1,7 @@
+# dir
+.vscode
+build
+logs
+
+# config
+*.xml
