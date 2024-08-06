@@ -9,7 +9,7 @@ void FdEvent::SetFdEvent(TriggerEvent event, const std::function<void()>& cb, co
         mReadCallBack = cb;
     } else if (event == OUT_EVENT) {
         mEpollEvent.events |= EPOLLOUT;
-        mReadCallBack = cb;
+        mWriteCallBack = cb;
     }
 
     if(errCb == nullptr)

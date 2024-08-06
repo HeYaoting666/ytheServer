@@ -58,7 +58,8 @@ uint32_t GetInt32FromNetByte(const char* buf) {
     return ntohl(re);
 }
 
-std::string EpollEventsToString(uint32_t events) {
+std::string EpollEventsToString(const epoll_event& epolleEvent) {
+    int events = epolleEvent.events;
     std::ostringstream oss;
 
     if (events & EPOLLIN) oss << "EPOLLIN ";

@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/epoll.h>
 #include <sys/syscall.h>
 
 namespace ythe {
@@ -24,5 +25,5 @@ std::string ConvertMillisToDateTime(long long millis);
 
 uint32_t    GetInt32FromNetByte(const char* buf);
 
-std::string EpollEventsToString(uint32_t events);
+std::string EpollEventsToString(const epoll_event& epolleEvent);
 }

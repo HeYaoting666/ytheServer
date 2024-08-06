@@ -42,20 +42,19 @@ void EventLoop::Loop()
     while(mIsLooping) {
         std::queue< std::function<void()> > tmpTasks;
         {
-            std::lock_guard<std::mutex> lock(std::mutex);
+            std::lock_guard<std::mutex> lock(mMutex);
             mPendingTasks.swap(tmpTasks);
         }
 
         while(!tmpTasks.empty()) {
             auto cb = std::move(tmpTasks.front());
             tmpTasks.pop();
-
             if(cb) cb();
         }
 
-        DEBUGLOG("%s", "now begin to epoll_wait")
+        // DEBUGLOG("%s", "now begin to epoll_wait")
         int numEvents = epoll_wait(mEpollfd, events, MAX_EVENT_NUMBER, -1);
-        DEBUGLOG("now end epoll_wait, num_events = %d", numEvents)
+        // DEBUGLOG("now end epoll_wait, num_events = %d", numEvents)
         if (numEvents < 0 && errno != EINTR) {
             ERRORLOG("epoll_wait error, errno=%d, error=%s", errno, strerror(errno))
             continue;
@@ -69,17 +68,17 @@ void EventLoop::Loop()
             }
             if(triggerEvent.events & EPOLLIN) {
                 DEBUGLOG("fd[%d] trigger EPOLLIN event", fdEvent->GetFd())
-                addTask(fdEvent->GetCallBack(TriggerEvent::IN_EVENT));
+                addTask(fdEvent->GetCallBack(IN_EVENT));
             }
             if(triggerEvent.events & EPOLLOUT) {
                 DEBUGLOG("fd[%d] trigger EPOLLOUT event", fdEvent->GetFd())
-                addTask(fdEvent->GetCallBack(TriggerEvent::OUT_EVENT));
+                addTask(fdEvent->GetCallBack(OUT_EVENT));
             }
             if(triggerEvent.events & EPOLLERR) {
                 DEBUGLOG("fd[%d] trigger EPOLLERROR event", fdEvent->GetFd())
-                if(fdEvent->GetCallBack(TriggerEvent::ERROR_EVENT) != nullptr) {
+                if(fdEvent->GetCallBack(ERROR_EVENT) != nullptr) {
                     DEBUGLOG("fd[%d] add error callback", fdEvent->GetFd())
-                    addTask(fdEvent->GetCallBack(TriggerEvent::ERROR_EVENT));
+                    addTask(fdEvent->GetCallBack(ERROR_EVENT));
                 }
                 deleteFdEventFromEpoll(fdEvent); // 删除出错的套接字
             }
@@ -117,17 +116,15 @@ void EventLoop::addFdEventToEpoll(FdEvent* fdEvent)
     int op = EPOLL_CTL_ADD;
     if(mListenFds.find(fdEvent->GetFd()) != mListenFds.end())
         op = EPOLL_CTL_MOD;
-
-    epoll_event epollEvent = fdEvent->GetEpollEvent();
-    
-    int rt = epoll_ctl(mEpollfd, op, fdEvent->GetFd(), &epollEvent);
+    auto events = fdEvent->GetEpollEvent();
+    int rt = epoll_ctl(mEpollfd, op, fdEvent->GetFd(), &events);
     if (rt == -1) {
         ERRORLOG("failed epoll_ctl when add fd[%d], errno=%d, error=%s", fdEvent->GetFd(), errno, strerror(errno));
         exit(0);
     }
     mListenFds.insert(fdEvent->GetFd());
 
-    INFOLOG("add event success fd[%d], events: %s", fdEvent->GetFd(), EpollEventsToString(epollEvent.events).c_str())
+    INFOLOG("add event success fd[%d], events: %s", fdEvent->GetFd(), EpollEventsToString(fdEvent->GetEpollEvent()).c_str())
 }
 
 void EventLoop::DeleteFdEventFromEpoll(FdEvent* fdEvent)
@@ -161,10 +158,9 @@ void EventLoop::deleteFdEventFromEpoll(FdEvent* fdEvent)
 void EventLoop::addTask(const std::function<void()> &cb, bool isWakeUp)
 {
     {
-        std::lock_guard<std::mutex> lock(std::mutex);
+        std::lock_guard<std::mutex> lock(mMutex);
         mPendingTasks.push(cb);
     }
-
     if(isWakeUp) {
         INFOLOG("%s", "WAKE UP")
         mWakeUpEvent->Wakeup();

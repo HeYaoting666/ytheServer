@@ -3,9 +3,9 @@
 
 namespace ythe {
 
-TCPConnection::TCPConnection(int fd, EventLoop* eventLoop, int bufferSize, 
+TCPConnection::TCPConnection(FdEvent* fdEvent, EventLoop* eventLoop, int bufferSize, 
     IPNetAddr::sp localAddr, IPNetAddr::sp peerAddr, TCPConnectionType type)
-    : mEventLoop(eventLoop), mLocalAddr(localAddr), mPeerAddr(peerAddr), mType(type)
+    : mConnEvent(fdEvent), mEventLoop(eventLoop), mLocalAddr(localAddr), mPeerAddr(peerAddr), mType(type)
 {
     // 初始化连接状态
     mState = NotConnected;
@@ -14,38 +14,42 @@ TCPConnection::TCPConnection(int fd, EventLoop* eventLoop, int bufferSize,
     mRecvBuffer = std::make_shared<TCPBuffer>(bufferSize);
     mSendBuffer = std::make_shared<TCPBuffer>(bufferSize);
 
-    // 初始化 fdEvent 事件
-    mConnEvent = new FdEvent(fd);
-    mConnEvent->SetNonBlock();
     if(mType == TCPConnectionByServer)
         ListenReadEvent();
 }
 
-TCPConnection::~TCPConnection()
+void TCPConnection::ListenReadEvent(bool setET)
 {
-    if(mConnEvent) {
-        delete mConnEvent;
-        mConnEvent = nullptr;
-    }
-}
-
-void TCPConnection::ListenReadEvent(bool isET)
-{
-    mConnEvent->SetFdEvent(TriggerEvent::IN_EVENT, std::bind(&TCPConnection::onRead, this));
-    if(isET)
+    mConnEvent->SetFdEvent(IN_EVENT, std::bind(&TCPConnection::onRead, this));
+    if(setET)
         mConnEvent->SetEpollET();
     mEventLoop->AddFdEventToEpoll(mConnEvent);
 }
 
-void TCPConnection::ListenWriteEvent(bool isET)
+void TCPConnection::ListenWriteEvent(bool setET)
 {
-    mConnEvent->SetFdEvent(TriggerEvent::OUT_EVENT, std::bind(&TCPConnection::onWrite, this));
-    if(isET)
+    mConnEvent->SetFdEvent(OUT_EVENT, std::bind(&TCPConnection::onWrite, this));
+    if(setET)
         mConnEvent->SetEpollET();
     mEventLoop->AddFdEventToEpoll(mConnEvent);
 }
 
-// socket 内核缓冲区 --> recvBuffer 应用层缓冲区
+void TCPConnection::CancelListenReadEvent(bool cancelET)
+{
+    mConnEvent->CancelFdEvent(IN_EVENT);
+    if(cancelET)
+        mConnEvent->CancelEpollET();
+    mEventLoop->AddFdEventToEpoll(mConnEvent);
+}
+
+void TCPConnection::CancelListenWriteEvent(bool cancelET)
+{
+    mConnEvent->CancelFdEvent(OUT_EVENT);
+    if(cancelET)
+        mConnEvent->CancelEpollET();
+    mEventLoop->AddFdEventToEpoll(mConnEvent);
+}
+
 void TCPConnection::onRead()
 {
     if (mState != Connected) {
@@ -59,11 +63,12 @@ void TCPConnection::onRead()
             mRecvBuffer->ResizeBuffer(2 * mRecvBuffer->Size());
         }
 
-        int readCount = mRecvBuffer->WriteAble();
-        int writeIndex = mRecvBuffer->WriteIndex();
-        int ret = read(mConnEvent->GetFd(), &(*mRecvBuffer)[writeIndex], readCount);
+        int writeSize = mRecvBuffer->WriteAble();
+        int writeStart = mRecvBuffer->WriteIndex();
+        // fd socket 内核缓冲区 --> recvBuffer 应用层缓冲区
+        int ret = read(mConnEvent->GetFd(), mRecvBuffer->Data() + writeStart, writeSize);
         DEBUGLOG("success read %d bytes from addr[%s], client fd[%d]", ret, mPeerAddr->ToString().c_str(), mConnEvent->GetFd())
-        if(ret == 0) {  // 客户端断开连接
+        if (ret == 0) {  // 客户端断开连接
             isClose = true;
             break;
         }
@@ -88,12 +93,41 @@ void TCPConnection::onRead()
 
 void TCPConnection::onWrite()
 {
+    if (mState != Connected) {
+        ERRORLOG("onWrite error, client has already disconnected, addr[%s], clientfd[%d]", 
+            mPeerAddr->ToString().c_str(), mConnEvent->GetFd())
+        return;
+    }
 
+    bool isWriteAll = false;
+    while(true) {
+        if (mSendBuffer->ReadAble() == 0) {
+            DEBUGLOG("%s", "no data need to send")
+            isWriteAll = true;
+            break;
+        }
+
+        int readSize = mSendBuffer->ReadAble();
+        int readStart = mSendBuffer->ReadIndex();
+        // sendBuffer 应用层缓冲区 --> fd socket 内核缓冲区
+        int ret = write(mConnEvent->GetFd(), mRecvBuffer->Data() + readStart, readSize) ;
+        if(ret == -1 && errno == EAGAIN) {
+            // 发送缓冲区已满，不能再发送了。
+            // 等待下次 fd 可写的时候再次发送数据即可
+            ERRORLOG("%s", "write data error, errno==EAGAIN and rt == -1")
+            break;
+        }
+        DEBUGLOG("success write %d bytes to addr[%s], client fd[%d]", ret,  mPeerAddr->ToString().c_str(), mConnEvent->GetFd())
+        mRecvBuffer->MoveReadIndex(ret);
+    }
+    if(isWriteAll) {
+        CancelListenWriteEvent();
+    }
 }
 
 void TCPConnection::execute()
 {
-    
+    INFOLOG("%s", "execute")
 }
 
 void TCPConnection::clear()

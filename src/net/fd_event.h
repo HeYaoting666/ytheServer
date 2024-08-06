@@ -24,7 +24,7 @@ enum TriggerEvent {
 class FdEvent {
 protected:
     int           mFd = -1;
-    epoll_event   mEpollEvent;
+    epoll_event   mEpollEvent {};
 
     std::function<void()> mReadCallBack;
     std::function<void()> mWriteCallBack;

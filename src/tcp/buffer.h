@@ -22,11 +22,14 @@ public:
     explicit TCPBuffer(int size);
 
 public:
-    // 返回可读字节数
+    // 返回可读取字节数
     int ReadAble() const { return mWriteIndex - mReadIndex; }
 
-    // 返回可写的字节数
+    // 返回可写入的字节数
     int WriteAble() const { return mBuffer.size() - mWriteIndex; }
+
+    // 获取缓冲区指针
+    char* Data() { return mBuffer.data(); }
 
     // 返回缓冲区容量
     int Size() const { return mBuffer.size(); }

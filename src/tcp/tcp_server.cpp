@@ -22,7 +22,7 @@ TCPServer::TCPServer(const IPNetAddr::sp& localAddrr)
     mIOThreadPool->Init();
 
     // 初始化 定时器事件 m_clear_client_timer_event
-    mTimerEvent = std::make_shared<TimerEvent>(5000, true, std::bind(&TCPServer::onClearClientTimerFunc, this));
+    mTimerEvent = std::make_shared<TimerEvent>(10000, true, std::bind(&TCPServer::onClearClientTimerFunc, this));
     mEventLoop->AddTimerEvent(mTimerEvent);
 
     INFOLOG("rocket TCPServer listen success on [%s]", mLocalAddr->ToString().c_str())
@@ -60,19 +60,27 @@ void TCPServer::onAccept()
     auto threadHander = mIOThreadPool->GetIOThread();
 
     // 将 clientFd 和 clientAddr 绑定到从属线程的eventloop中
+    FdEvent* clientFdEvent = new FdEvent(clientFd);
     auto conn = std::make_shared<TCPConnection>(
-        clientFd, threadHander->GetEventLoop(), 128, clientAddr, mLocalAddr);
+        clientFdEvent, threadHander->GetEventLoop(), 128, mLocalAddr, clientAddr);
     conn->SetState(Connected);
+
     mConnClients.insert(conn);
+    mClientFdEventsMap[clientFd] = clientFdEvent;
     INFOLOG("TCPServer success get client, addr[%s], fd[%d]", clientAddr->ToString().c_str(), clientFd)
 }
 
 void TCPServer::onClearClientTimerFunc()
 {
     for (auto it = mConnClients.begin(); it != mConnClients.end(); ) {
-        if ((*it) != nullptr && (*it).use_count() > 0 && (*it)->GetState() == Closed) {
-            DEBUGLOG("TCPConnection [fd:%d] will delete, state=%d", (*it)->GetFd(), (*it)->GetState());
-            it = mConnClients.erase(it);
+        auto conn = *it;
+        if (conn != nullptr && conn.use_count() > 0 && conn->GetState() == Closed) {
+            DEBUGLOG("TCPConnection [fd:%d] will delete, state=%d", conn->GetFd(), conn->GetState())
+            
+            delete mClientFdEventsMap[conn->GetFd()];
+            mClientFdEventsMap.erase(conn->GetFd());
+
+            it = mConnClients.erase(it);  // 从连接集合中删除并更新迭代器，避免迭代器失效
         } else {
             ++it;
         }

@@ -1,7 +1,6 @@
 #include "timer.h"
 #include "../log/logger.h"
 #include "../utils/utils.h"
-
 namespace ythe {
 
 Timer::Timer(): FdEvent()
@@ -10,7 +9,8 @@ Timer::Timer(): FdEvent()
     INFOLOG("create timer fd[%d]", mFd)
 
     // 设置 mFd 监听事件和回调函数
-    SetFdEvent(TriggerEvent::IN_EVENT, std::bind(&Timer::onTimer, this));
+    SetFdEvent(IN_EVENT, std::bind(&Timer::onTimer, this));
+    SetEpollET();
 }
 
 void Timer::AddTimerEvent(const TimerEvent::sp& timeEvent)

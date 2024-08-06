@@ -36,15 +36,19 @@ private:
     TCPConnectionState mState;       // 连接状态
 
 public:
-    TCPConnection(int fd, EventLoop* eventLoop, int bufferSize, 
+    TCPConnection(FdEvent* fdEvent, EventLoop* eventLoop, int bufferSize, 
         IPNetAddr::sp localAddr, IPNetAddr::sp peerAddr, TCPConnectionType type = TCPConnectionByServer);
 
-    ~TCPConnection();
+    ~TCPConnection() = default;
 
 public:
-    void               ListenReadEvent(bool isET = true);
+    void               ListenReadEvent(bool setET = true);
 
-    void               ListenWriteEvent(bool isET = true);
+    void               ListenWriteEvent(bool setET = true);
+
+    void               CancelListenReadEvent(bool cancelET = false);
+
+    void               CancelListenWriteEvent(bool cancelET = false);
 
     void               SetState(TCPConnectionState state) { mState = state; }
 

@@ -8,15 +8,16 @@ namespace ythe {
 
 class TCPServer {
 private:
-    FdEvent*                    mListenEvent;   // 监听套接字事件描述符管理
-    EventLoop*                  mEventLoop;     // 主线程事件循环，负责监听连接套接字
-    IPNetAddr::sp               mLocalAddr;
+    FdEvent*                          mListenEvent;   // 监听套接字事件描述符管理
+    EventLoop*                        mEventLoop;     // 主线程事件循环，负责监听连接套接字
+    IPNetAddr::sp                     mLocalAddr;
 
-    IOThreadPool*               mIOThreadPool;
-    std::set<TCPConnection::sp> mConnClients;
+    IOThreadPool*                     mIOThreadPool;
+    std::set<TCPConnection::sp>       mConnClients;
+    std::unordered_map<int, FdEvent*> mClientFdEventsMap; //管理客户端连接 socket 和 fdEvent
 
-    TCPAcceptor::sp             mAcceptor;
-    TimerEvent::sp              mTimerEvent;
+    TCPAcceptor::sp                   mAcceptor;
+    TimerEvent::sp                    mTimerEvent;
 
 public:
     explicit TCPServer(const IPNetAddr::sp& localAddrr);

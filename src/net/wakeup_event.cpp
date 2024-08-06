@@ -16,7 +16,8 @@ WakeUpEvent::WakeUpEvent(): FdEvent()
         while(read(mFd, buf, 8) != -1 && errno != EAGAIN) {}
         DEBUGLOG("read full bytes from wakeup fd[%d]", mFd)
     };
-    SetFdEvent(TriggerEvent::IN_EVENT, cb); // 设置wakeup事件为读就绪同时传入对应的回调函数
+    SetFdEvent(IN_EVENT, cb); // 设置wakeup事件为读就绪同时传入对应的回调函数
+    SetEpollET();
 }
 
 void WakeUpEvent::Wakeup()

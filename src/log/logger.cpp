@@ -32,7 +32,7 @@ void Logger::Stop()
     mpAsyncLogger->Flush();
 }
 
-std::string GetLogEvent(LogLevel logLevel)
+std::string GetLogEvent(LogLevel logLevel, std::string fileName, std::string line)
 {
     std::string nowTimeStr = GetCurrentDateTime();
 
@@ -40,10 +40,10 @@ std::string GetLogEvent(LogLevel logLevel)
     pid_t threadId = GetThreadId();
 
     std::stringstream ss;
-    ss << "[" << logLevelToString(logLevel) << "]\t"
-       << "[" << nowTimeStr << "]\t"
-       << "[" + std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t"
-       << "[" << "Pid: " << pid << ", " << "ThreadId: " << threadId << "]\t";
+    ss << "[" << std::setw(5) << std::left << logLevelToString(logLevel) << "] "
+       << "[" << nowTimeStr << "] "
+       << "[" << std::setw(50) << std::left << (fileName + ":" + line) << "] "
+       << "[Pid: " << std::setw(5) << pid << ", " << "ThreadId: " << threadId << "]\t";
 
     return ss.str();
 }
