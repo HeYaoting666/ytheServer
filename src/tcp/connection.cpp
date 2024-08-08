@@ -1,4 +1,6 @@
 #include "connection.h"
+#include "../coder/tinypb_coder.h"
+#include "../coder/tinypb_protocol.h"
 #include "../net/fd_event.h"
 
 namespace ythe {
@@ -14,8 +16,18 @@ TCPConnection::TCPConnection(FdEvent* fdEvent, EventLoop* eventLoop, int bufferS
     mRecvBuffer = std::make_shared<TCPBuffer>(bufferSize);
     mSendBuffer = std::make_shared<TCPBuffer>(bufferSize);
 
-    if(mType == TCPConnectionByServer)
-        ListenReadEvent();
+    // 监听可读事件
+    ListenReadEvent();
+
+    mCoder = new TinyPBCoder();
+}
+
+TCPConnection::~TCPConnection()
+{
+    if(mCoder != nullptr) {
+        delete mCoder;
+        mCoder = nullptr;
+    }
 }
 
 void TCPConnection::ListenReadEvent(bool setET)
@@ -53,7 +65,7 @@ void TCPConnection::CancelListenWriteEvent(bool cancelET)
 void TCPConnection::onRead()
 {
     if (mState != Connected) {
-        ERRORLOG("onRead error, client has already disconnected, addr[%s], clientfd[%d]", mPeerAddr->ToString().c_str(), mConnEvent->GetFd())
+        ERRORLOG("fd[%d], onRead error, client has already disconnected, addr[%s]", mConnEvent->GetFd(), mPeerAddr->ToString().c_str())
         return;
     }
 
@@ -67,7 +79,7 @@ void TCPConnection::onRead()
         int writeStart = mRecvBuffer->WriteIndex();
         // fd socket 内核缓冲区 --> recvBuffer 应用层缓冲区
         int ret = read(mConnEvent->GetFd(), mRecvBuffer->Data() + writeStart, writeSize);
-        DEBUGLOG("success read %d bytes from addr[%s], client fd[%d]", ret, mPeerAddr->ToString().c_str(), mConnEvent->GetFd())
+        DEBUGLOG("fd[%d] success read %d bytes from addr[%s]", mConnEvent->GetFd(), ret, mPeerAddr->ToString().c_str())
         if (ret == 0) {  // 客户端断开连接
             isClose = true;
             break;
@@ -76,26 +88,33 @@ void TCPConnection::onRead()
             if(errno == EAGAIN || errno == EWOULDBLOCK) // 全部读取完成
                 break;
             else {
-                ERRORLOG("onRead Error from addr[%s], client fd[%d]", mPeerAddr->ToString().c_str(), mConnEvent->GetFd())
+                ERRORLOG("fd[%d] onRead Error from addr[%s]", mConnEvent->GetFd(), mPeerAddr->ToString().c_str())
                 return;
             }
         }
         mRecvBuffer->MoveWriteIndex(ret);
     }
     if(isClose) {
-        INFOLOG("peer closed, peer addr [%s], clientfd [%d]", mPeerAddr->ToString().c_str(), mConnEvent->GetFd())
+        INFOLOG("fd[%d] peer closed, peer addr [%s]]", mConnEvent->GetFd(), mPeerAddr->ToString().c_str())
         clear();
         return;
     }
 
-    execute();
+    if(mType == TCPConnectionByClient) {
+        mEventLoop->Stop(false); // 回调函数执行Stop不需要wakeup
+        return;
+    }
+
+    if(mType == TCPConnectionByServer) {
+        // 执行http任务或rpc任务
+        execute();
+    }
 }
 
 void TCPConnection::onWrite()
 {
     if (mState != Connected) {
-        ERRORLOG("onWrite error, client has already disconnected, addr[%s], clientfd[%d]", 
-            mPeerAddr->ToString().c_str(), mConnEvent->GetFd())
+        ERRORLOG("fd[%d] onWrite error, disconnected, addr[%s]", mConnEvent->GetFd(), mPeerAddr->ToString().c_str())
         return;
     }
 
@@ -117,8 +136,8 @@ void TCPConnection::onWrite()
             ERRORLOG("%s", "write data error, errno==EAGAIN and rt == -1")
             break;
         }
-        DEBUGLOG("success write %d bytes to addr[%s], client fd[%d]", ret,  mPeerAddr->ToString().c_str(), mConnEvent->GetFd())
-        mRecvBuffer->MoveReadIndex(ret);
+        DEBUGLOG("fd[%d] success write %d bytes to addr[%s]", mConnEvent->GetFd(), ret, mPeerAddr->ToString().c_str())
+        mSendBuffer->MoveReadIndex(ret);
     }
     if(isWriteAll) {
         CancelListenWriteEvent();
@@ -127,7 +146,17 @@ void TCPConnection::onWrite()
 
 void TCPConnection::execute()
 {
-    INFOLOG("%s", "execute")
+    // 从 buffer 里 decode 得到 message 对象
+    std::vector<AbstractProtocol::sp> messages;
+    mCoder->Decode(mRecvBuffer, messages);
+    for(auto& reqMsg: messages) {
+        INFOLOG("success get request[%s] from client[%s]", reqMsg->mMsgId.c_str(), mPeerAddr->ToString().c_str())
+
+        // 1. 针对每一个请求，调用 rpc 方法，获取 响应message
+        // 2. 将响应体 rsp_msg 放入到发送缓冲区，监听可写事件回包
+        std::shared_ptr<TinyPBProtocol> respMsg = std::make_shared<TinyPBProtocol>();
+        // RpcDispatcher::GetRpcDispatcher()->dispatch(req_msg, rsp_msg, this);
+    }
 }
 
 void TCPConnection::clear()

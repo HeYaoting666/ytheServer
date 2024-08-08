@@ -22,8 +22,8 @@ TCPServer::TCPServer(const IPNetAddr::sp& localAddrr)
     mIOThreadPool->Init();
 
     // 初始化 定时器事件 m_clear_client_timer_event
-    mTimerEvent = std::make_shared<TimerEvent>(10000, true, std::bind(&TCPServer::onClearClientTimerFunc, this));
-    mEventLoop->AddTimerEvent(mTimerEvent);
+    // mTimerEvent = std::make_shared<TimerEvent>(10000, true, std::bind(&TCPServer::onClearClientTimerFunc, this));
+    // mEventLoop->AddTimerEvent(mTimerEvent);
 
     INFOLOG("rocket TCPServer listen success on [%s]", mLocalAddr->ToString().c_str())
 }
@@ -58,9 +58,10 @@ void TCPServer::onAccept()
 {
     auto [clientFd, clientAddr] = mAcceptor->TCPAccept();
     auto threadHander = mIOThreadPool->GetIOThread();
-
     // 将 clientFd 和 clientAddr 绑定到从属线程的eventloop中
     FdEvent* clientFdEvent = new FdEvent(clientFd);
+    clientFdEvent->SetNonBlock(); // ET模式设置非阻塞
+
     auto conn = std::make_shared<TCPConnection>(
         clientFdEvent, threadHander->GetEventLoop(), 128, mLocalAddr, clientAddr);
     conn->SetState(Connected);

@@ -33,7 +33,7 @@ public:
 public:
     void Loop();
 
-    void Stop();
+    void Stop(bool isWakeUp = true);
 
     void AddTimerEvent(const TimerEvent::sp& timeEvent);
 

@@ -151,7 +151,7 @@ void TinyPBCoder::Decode(TCPBuffer::sp buffer, std::vector<AbstractProtocol::sp>
             // 解析 method_name
             uint32_t methodNameIndex = methodNameLenIndex + sizeof(message->mMethodNameLen);
             message->mMethodName = std::string(&tmp[methodNameIndex], message->mMethodNameLen);
-            DEBUGLOG("parse method_name=%s", message->mMethodName)
+            DEBUGLOG("parse method_name=%s", message->mMethodName.c_str())
 
             // 解析 err_code
             uint32_t errCodeIndex = methodNameIndex + message->mMethodNameLen;

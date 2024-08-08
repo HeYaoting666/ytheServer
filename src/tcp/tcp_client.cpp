@@ -12,7 +12,6 @@ TCPClient::TCPClient(const IPNetAddr::sp &peerAddr): mPeerAddr(peerAddr)
         return;
     }
     mFdEvent = new FdEvent(fd);
-    mFdEvent->SetNonBlock();
 
     initLocalAddr(); // 初始化本地地址
     mConn = std::make_shared<TCPConnection>(
@@ -43,44 +42,30 @@ void TCPClient::TCPConnect()
     }
 }
 
+void TCPClient::SendData(const TCPBuffer::sp& sendData)
+{
+    if(mConn->GetState() != Connected) {
+        ERRORLOG("fd[%d] no connect, sendData error", mConn->GetFd())
+        return;
+    }
+    mConn->SetSendBuffer(sendData);
+    mConn->ListenWriteEvent();
+    mEventLoop->Loop();
+}
+
+void TCPClient::RecvData(TCPBuffer::sp recvData)
+{
+    if(mConn->GetState() != Connected) {
+        ERRORLOG("fd[%d] no connect, sendData error", mConn->GetFd())
+        return;
+    }
+    recvData = mConn->GetRecvBuffer();
+}
+
 void TCPClient::onConnect()
 {
-    // EINPROGRESS 表示连接建立过程仍在进行中，此时需要通过后续的操作
-    // 如 select() 或 epoll_wait() 来检查套接字状态，以确定连接是否已成功建立或失败。
     int ret = connect(mFdEvent->GetFd(), mPeerAddr->GetSockAddr(), mPeerAddr->GetSockLen());
-    if (ret == -1 && errno != EINPROGRESS) {
-        mConnectErrorCode = ERROR_FAILED_CONNECT;
-        mConnectErrorInfo = "connect error, sys error = " + std::string(strerror(errno));
-        return;
-    }
-    if(ret == -1 && errno == EINPROGRESS) {
-        onNonBlockingConnect();
-        return;
-    }
-    if (ret == 0) {
-        onConnectSuccess();
-        return;
-    }
-}
-
-void TCPClient::onConnectSuccess()
-{
-    INFOLOG("connect [%s] success", mPeerAddr->ToString().c_str())
-    mConn->SetState(Connected);
-}
-
-void TCPClient::onNonBlockingConnect()
-{
-    mFdEvent->SetFdEvent(OUT_EVENT, std::bind(&TCPClient::handleNonBlockingConnect, this));
-    mEventLoop->AddFdEventToEpoll(mFdEvent);
-}
-
-void TCPClient::handleNonBlockingConnect()
-{
-    int ret = connect(mFdEvent->GetFd(), mPeerAddr->GetSockAddr(), mPeerAddr->GetSockLen());
-    if ((ret < 0 && errno == EISCONN) || (ret == 0)) {
-        onConnectSuccess();
-    } else {
+    if (ret == -1) {
         if (errno == ECONNREFUSED) {
             mConnectErrorCode = ERROR_PEER_CLOSED;
             mConnectErrorInfo = "connect refused, sys error = " + std::string(strerror(errno));
@@ -88,10 +73,11 @@ void TCPClient::handleNonBlockingConnect()
             mConnectErrorCode = ERROR_FAILED_CONNECT;
             mConnectErrorInfo = "connect unknown error, sys error = " + std::string(strerror(errno));
         }
+        return;
     }
-    // 连接完后需要在“epoll事件表”中去掉可写事件的监听，不然会一直触发
-    mFdEvent->CancelFdEvent(OUT_EVENT);
-    mEventLoop->AddFdEventToEpoll(mFdEvent);
+    INFOLOG("connect [%s] success", mPeerAddr->ToString().c_str())
+    mConn->SetState(Connected);
+    return;
 }
 
 void TCPClient::initLocalAddr()

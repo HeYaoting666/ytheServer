@@ -27,24 +27,15 @@ public:
     ~TCPClient();
 
 public:
-    // 异步进行 connect，即非阻塞connect
-    // 如果 connect 完成，done 会被执行
     void TCPConnect();
 
-    void Start() { mEventLoop->Loop(); }
+    void SendData(const TCPBuffer::sp& sendData);
+
+    void RecvData(TCPBuffer::sp recvData);
 
 private:;
     // 处理连接逻辑
     void onConnect();
-
-    // 处理连接成功的逻辑
-    void onConnectSuccess();
-
-    // 处理非阻塞连接的逻辑
-    void onNonBlockingConnect();
-    
-    // 非阻塞连接回调函数
-    void handleNonBlockingConnect();
 
     void initLocalAddr();
 };

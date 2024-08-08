@@ -86,11 +86,13 @@ void EventLoop::Loop()
     }
 }
 
-void EventLoop::Stop()
+void EventLoop::Stop(bool isWakeUp)
 {
     mIsLooping = false;
-    INFOLOG("%s", "Stop EventLoop")
-    mWakeUpEvent->Wakeup();
+    if(isWakeUp) {
+        INFOLOG("%s", "Stop EventLoop")
+        mWakeUpEvent->Wakeup();
+    }
 }
 
 void EventLoop::AddTimerEvent(const TimerEvent::sp& timeEvent)

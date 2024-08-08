@@ -1,5 +1,6 @@
 #pragma once
 #include "../net/eventloop.h"
+#include "../abstract/abstract_protocol.h"
 #include "ip_net_addr.h"
 #include "buffer.h"
 
@@ -35,11 +36,13 @@ private:
     TCPConnectionType  mType;        // 连接类型
     TCPConnectionState mState;       // 连接状态
 
+    AbstractCoder*     mCoder;       // 编码解码器
+
 public:
     TCPConnection(FdEvent* fdEvent, EventLoop* eventLoop, int bufferSize, 
         IPNetAddr::sp localAddr, IPNetAddr::sp peerAddr, TCPConnectionType type = TCPConnectionByServer);
 
-    ~TCPConnection() = default;
+    ~TCPConnection();
 
 public:
     void               ListenReadEvent(bool setET = true);
@@ -53,6 +56,10 @@ public:
     void               SetState(TCPConnectionState state) { mState = state; }
 
     void               SetConnectionType(TCPConnectionType type) { mType = type; }
+
+    void               SetSendBuffer(const TCPBuffer::sp& sendBuffer) { mSendBuffer = sendBuffer; }
+
+    TCPBuffer::sp      GetRecvBuffer()     const { return mRecvBuffer; }
 
     TCPConnectionState GetState()          const { return mState; }
 
