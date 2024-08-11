@@ -31,7 +31,15 @@ public:
 
     void SendData(const TCPBuffer::sp& sendData);
 
-    void RecvData(TCPBuffer::sp recvData);
+    void RecvData(TCPBuffer::sp& recvData);
+
+    void AddTimerEvent(const TimerEvent::sp& timerEvent) {
+        mEventLoop->AddTimerEvent(timerEvent);
+    }
+
+    IPNetAddr::sp GetLocalAddr() const { return mLocalAddr; }
+
+    IPNetAddr::sp GetPeerAddr() const { return mPeerAddr; }
 
 private:;
     // 处理连接逻辑

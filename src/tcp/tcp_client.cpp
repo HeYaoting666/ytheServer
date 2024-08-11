@@ -12,6 +12,7 @@ TCPClient::TCPClient(const IPNetAddr::sp &peerAddr): mPeerAddr(peerAddr)
         return;
     }
     mFdEvent = new FdEvent(fd);
+    mFdEvent->SetNonBlock();
 
     initLocalAddr(); // 初始化本地地址
     mConn = std::make_shared<TCPConnection>(
@@ -37,8 +38,8 @@ void TCPClient::TCPConnect()
 {
     onConnect();
     if(mConnectErrorCode != 0) {
-        INFOLOG("client connect error, errorno: %d, error msg: %s", mConnectErrorCode, mConnectErrorInfo)
-        exit(0);
+        INFOLOG("client connect error, errorno: %d, error msg: %s", mConnectErrorCode, mConnectErrorInfo.c_str())
+        exit(1);
     }
 }
 
@@ -53,7 +54,7 @@ void TCPClient::SendData(const TCPBuffer::sp& sendData)
     mEventLoop->Loop();
 }
 
-void TCPClient::RecvData(TCPBuffer::sp recvData)
+void TCPClient::RecvData(TCPBuffer::sp& recvData)
 {
     if(mConn->GetState() != Connected) {
         ERRORLOG("fd[%d] no connect, sendData error", mConn->GetFd())
@@ -65,7 +66,18 @@ void TCPClient::RecvData(TCPBuffer::sp recvData)
 void TCPClient::onConnect()
 {
     int ret = connect(mFdEvent->GetFd(), mPeerAddr->GetSockAddr(), mPeerAddr->GetSockLen());
-    if (ret == -1) {
+    if (ret == -1 && errno == EINPROGRESS) {
+        ret = connect(mFdEvent->GetFd(), mPeerAddr->GetSockAddr(), mPeerAddr->GetSockLen());
+        if (ret == -1 && errno != EINPROGRESS) {
+            mConnectErrorCode = ERROR_FAILED_CONNECT;
+            mConnectErrorInfo = "connect unknown error, sys error = " + std::string(strerror(errno));
+            return;
+        }
+        INFOLOG("connect [%s] success", mPeerAddr->ToString().c_str())
+        mConn->SetState(Connected);
+        return;
+    }
+    if (ret == -1 && errno != EINPROGRESS) {
         if (errno == ECONNREFUSED) {
             mConnectErrorCode = ERROR_PEER_CLOSED;
             mConnectErrorInfo = "connect refused, sys error = " + std::string(strerror(errno));
@@ -75,6 +87,7 @@ void TCPClient::onConnect()
         }
         return;
     }
+
     INFOLOG("connect [%s] success", mPeerAddr->ToString().c_str())
     mConn->SetState(Connected);
     return;

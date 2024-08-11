@@ -81,7 +81,7 @@ void TCPConnection::onRead()
         // fd socket 内核缓冲区 --> recvBuffer 应用层缓冲区
         int ret = read(mConnEvent->GetFd(), mRecvBuffer->Data() + writeStart, writeSize);
         DEBUGLOG("fd[%d] success read %d bytes from addr[%s]", mConnEvent->GetFd(), ret, mPeerAddr->ToString().c_str())
-        if (ret == 0) {  // 客户端断开连接
+        if (ret == 0) {  // 对端断开连接
             isClose = true;
             break;
         }
@@ -102,7 +102,7 @@ void TCPConnection::onRead()
     }
 
     if(mType == TCPConnectionByClient) {
-        mEventLoop->Stop(false); // 回调函数执行Stop不需要wakeup
+        mEventLoop->Stop();
         return;
     }
 
@@ -130,7 +130,7 @@ void TCPConnection::onWrite()
         int readSize = mSendBuffer->ReadAble();
         int readStart = mSendBuffer->ReadIndex();
         // sendBuffer 应用层缓冲区 --> fd socket 内核缓冲区
-        int ret = write(mConnEvent->GetFd(), mRecvBuffer->Data() + readStart, readSize) ;
+        int ret = write(mConnEvent->GetFd(), mSendBuffer->Data() + readStart, readSize) ;
         if(ret == -1 && errno == EAGAIN) {
             // 发送缓冲区已满，不能再发送了。
             // 等待下次 fd 可写的时候再次发送数据即可

@@ -1,34 +1,41 @@
 #include "../src/config/config.h"
 #include "../src/log/logger.h"
-#include "../src/tcp/tcp_client.h"
-#include "../src/coder/tinypb_coder.h"
-#include "../src/coder/tinypb_protocol.h"
+#include "../pb/compute.pb.h"
+#include "../src/rpc/rpc_channel.h"
+#include "../src/rpc/rpc_closure.h"
 
 
 int main() {
-    // auto configInstance = ythe::Config::GetInstance();
-    // configInstance->Init("/root/cpp/ytheRPC/server_config.xml");
+    auto configInstance = ythe::Config::GetInstance();
+    configInstance->Init("/root/cpp/ytheRPC/server_config.xml");
 
-    // auto logInstance = ythe::Logger::GetInstance();
-    // logInstance->Init();
+    auto logInstance = ythe::Logger::GetInstance();
+    logInstance->Init();
 
-    // auto addr = std::make_shared<ythe::IPNetAddr>("127.0.0.1:9000");
-    // ythe::TCPClient client(addr);
-
-    // auto msg = std::make_shared<ythe::TinyPBProtocol>();
-    // msg->mMsgId = "123456";
-    // msg->mMethodName = "Add";
-    // msg->mPbData = "1, 2";
-    // std::vector<ythe::AbstractProtocol::sp> vec;
-    // vec.push_back(msg);
-    // auto coder = std::make_shared<ythe::TinyPBCoder>();
-    // auto buffer = std::make_shared<ythe::TCPBuffer>(128);
-    // coder->Encode(vec, buffer);
-    // // coder->Decode(buffer, vec);
-
-
-    // client.TCPConnect();  
-    // client.SendData(buffer);
+    auto addr = std::make_shared<ythe::IPNetAddr>("127.0.0.1:9000");
     
+    // 定义rpc channel
+    auto channel = std::make_shared<ythe::RpcChannel>(addr);
+    auto reqPb = std::make_shared<Request>();
+    auto respPb = std::make_shared<Response>();
+    reqPb->set_x(1);
+    reqPb->set_y(1);
+    
+    // 定义rpc controller
+    auto controller = std::make_shared<ythe::RpcController>();
+    controller->SetMsgId("99998888");
+    controller->SetTimeout(5000);
+
+    // 定义rpc closure
+    auto closure = std::make_shared<ythe::RpcClosure>([reqPb, respPb, controller]{
+        if(controller->GetErrorCode() == 0) {
+            INFOLOG("call rpc success, request[%s], response[%s]", reqPb->ShortDebugString().c_str(), respPb->ShortDebugString().c_str())
+        }
+    });
+    
+    // 定义rpc stub
+    Compute_Stub computeStub(channel.get());
+    computeStub.Add(controller.get(), reqPb.get(), respPb.get(), closure.get());
+
     return 0;
 }

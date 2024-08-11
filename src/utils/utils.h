@@ -21,6 +21,8 @@ std::string GetCurrentDateTime();
 
 int64_t     GetNowMs();
 
+std::string GetMsgID(int length = 20);
+
 std::string ConvertMillisToDateTime(long long millis);
 
 uint32_t    GetInt32FromNetByte(const char* buf);

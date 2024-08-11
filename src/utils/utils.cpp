@@ -1,5 +1,8 @@
 #include "utils.h"
 #include <sys/epoll.h>
+#include <random>
+#include <string>
+#include <ctime>
 
 namespace ythe {
 
@@ -50,6 +53,21 @@ std::string ConvertMillisToDateTime(long long millis) {
     std::ostringstream oss;
     oss << std::put_time(local_tm, "%Y-%m-%d %H:%M:%S");
     return oss.str();
+}
+
+std::string GetMsgID(int length) {
+    const std::string digits = "0123456789";
+    std::string id;
+    id.reserve(length);
+
+    std::mt19937 generator(static_cast<unsigned long>(std::time(nullptr)));
+    std::uniform_int_distribution<> distribution(0, digits.size() - 1);
+
+    for (int i = 0; i < length; ++i) {
+        id += digits[distribution(generator)];
+    }
+
+    return id;
 }
 
 uint32_t GetInt32FromNetByte(const char* buf) {
