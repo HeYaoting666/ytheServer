@@ -16,7 +16,7 @@ public:
     }
 
     ~RpcClosure() override {
-        INFOLOG("%s", "~RpcClosure")
+        DEBUGLOG("%s", "~RpcClosure")
     }
 
 public:

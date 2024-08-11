@@ -39,7 +39,7 @@ public:
 
     void          NotifyOnCancel(google::protobuf::Closure* callback) override;
 
-    bool         IsCanceled() const override;
+    bool          IsCanceled() const override;
 
     bool          Finished() const;
 
