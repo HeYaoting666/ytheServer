@@ -1,6 +1,7 @@
 #pragma once
 #include "../net/eventloop.h"
 #include "../abstract/abstract_protocol.h"
+#include "../abstract/abstract_coder.h"
 #include "ip_net_addr.h"
 #include "buffer.h"
 

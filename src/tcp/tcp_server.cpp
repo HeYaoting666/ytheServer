@@ -22,8 +22,8 @@ TCPServer::TCPServer(const IPNetAddr::sp& localAddrr)
     mIOThreadPool->Init();
 
     // 初始化 定时器事件 m_clear_client_timer_event
-    // mTimerEvent = std::make_shared<TimerEvent>(10000, true, std::bind(&TCPServer::onClearClientTimerFunc, this));
-    // mEventLoop->AddTimerEvent(mTimerEvent);
+    mTimerEvent = std::make_shared<TimerEvent>(10000, true, std::bind(&TCPServer::onClearClientTimerFunc, this));
+    mEventLoop->AddTimerEvent(mTimerEvent);
 
     INFOLOG("rocket TCPServer listen success on [%s]", mLocalAddr->ToString().c_str())
 }

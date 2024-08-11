@@ -3,6 +3,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 
+#include "../tcp/ip_net_addr.h"
 #include "../coder/tinypb_protocol.h"
 
 namespace ythe {
@@ -32,7 +33,7 @@ private:
     ~RpcDispatcher() = default;
 
 public:
-    void Dispatch(const AbstractProtocol::sp& reqPb, const AbstractProtocol::sp& respPb, TCPConnection* conn);
+    void Dispatch(const AbstractProtocol::sp& reqPb, const AbstractProtocol::sp& respPb, IPNetAddr::sp localAddr, IPNetAddr::sp peerAddr);
 
     // 注册prc服务对象
     void RegisterService(const serviceSp& service);

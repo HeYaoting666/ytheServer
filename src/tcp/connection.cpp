@@ -1,6 +1,7 @@
 #include "connection.h"
 #include "../coder/tinypb_coder.h"
 #include "../coder/tinypb_protocol.h"
+#include "../rpc/rpc_dispatcher.h"
 #include "../net/fd_event.h"
 
 namespace ythe {
@@ -146,17 +147,22 @@ void TCPConnection::onWrite()
 
 void TCPConnection::execute()
 {
-    // 从 buffer 里 decode 得到 message 对象
-    std::vector<AbstractProtocol::sp> messages;
-    mCoder->Decode(mRecvBuffer, messages);
-    for(auto& reqMsg: messages) {
-        INFOLOG("success get request[%s] from client[%s]", reqMsg->mMsgId.c_str(), mPeerAddr->ToString().c_str())
+    std::vector<AbstractProtocol::sp> reqMessages;
+    std::vector<AbstractProtocol::sp> respMessages;
 
-        // 1. 针对每一个请求，调用 rpc 方法，获取 响应message
-        // 2. 将响应体 rsp_msg 放入到发送缓冲区，监听可写事件回包
-        std::shared_ptr<TinyPBProtocol> respMsg = std::make_shared<TinyPBProtocol>();
-        // RpcDispatcher::GetRpcDispatcher()->dispatch(req_msg, rsp_msg, this);
+    // 从 RecvBuffer 里 decode 得到 reqMessages 对象
+    mCoder->Decode(mRecvBuffer, reqMessages);
+    for(auto& req: reqMessages) {
+        INFOLOG("success get request[%s] from client[%s]", req->mMsgId.c_str(), mPeerAddr->ToString().c_str())
+
+        // 针对每一个请求，调用 rpc 方法，获取 resp
+        std::shared_ptr<TinyPBProtocol> resp = std::make_shared<TinyPBProtocol>();
+        RpcDispatcher::GetInstance()->Dispatch(req, resp, mLocalAddr, mPeerAddr);
+        respMessages.emplace_back(resp);
     }
+    // 消息写回，将响应体 respMessages 放入到发送缓冲区，监听可写事件回包
+    mCoder->Encode(respMessages, mSendBuffer);
+    ListenWriteEvent();
 }
 
 void TCPConnection::clear()

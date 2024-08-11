@@ -1,0 +1,17 @@
+syntax = "proto3";
+option cc_generic_services = true;
+
+message Request {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message Response {
+  int32 z = 1;
+}
+
+service Compute {
+  rpc Add(Request) returns (Response);
+}
+
+//protoc order.proto --cpp_out=./

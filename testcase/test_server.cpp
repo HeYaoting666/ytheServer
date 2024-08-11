@@ -1,9 +1,17 @@
 #include "../src/config/config.h"
 #include "../src/log/logger.h"
+#include "../src/rpc/rpc_dispatcher.h"
 #include "../src/tcp/tcp_server.h"
-#include "../src/tcp/tcp_client.h"
-#include <iostream>
+#include "../pb/compute.pb.h"
 
+class ComputeService : public Compute {
+public:
+    void Add(google::protobuf::RpcController* controller, const Request* req, Response* resp, 
+        google::protobuf::Closure* done) override {
+            resp->set_z(req->x() + req->y());
+            if(done) done->Run();
+        }
+};
 
 int main() {
     auto configInstance = ythe::Config::GetInstance();
@@ -12,12 +20,9 @@ int main() {
     auto logInstance = ythe::Logger::GetInstance();
     logInstance->Init();
 
-    // auto eventLoop = ythe::EventLoop::GetInstance();
-    // eventLoop->Init();
+    auto cumputeService = std::make_shared<ComputeService>();
+    ythe::RpcDispatcher::GetInstance()->RegisterService(cumputeService);
 
-    // auto timeEvent = std::make_shared<ythe::TimerEvent>(1000, true, [](){std::cout << "Server" << std::endl;});
-    // eventLoop->AddTimerEvent(timeEvent);
-    // eventLoop->Loop();//开始监听事件
     auto addr = std::make_shared<ythe::IPNetAddr>("127.0.0.1:9000");
     ythe::TCPServer server(addr);
     server.Start();
