@@ -15,7 +15,7 @@ public:
 
 int main() {
     auto configInstance = ythe::Config::GetInstance();
-    configInstance->Init("/root/cpp/ytheRPC/server_config.xml");
+    configInstance->Init("/root/cpp/ythe_server/config.xml");
 
     auto logInstance = ythe::Logger::GetInstance();
     logInstance->Init();
@@ -23,7 +23,7 @@ int main() {
     auto cumputeService = std::make_shared<ComputeService>();
     ythe::RpcDispatcher::GetInstance()->RegisterService(cumputeService);
 
-    auto addr = std::make_shared<ythe::IPNetAddr>("127.0.0.1:9000");
+    auto addr = std::make_shared<ythe::IPNetAddr>(configInstance->mServerIp, configInstance->mServerPort);
     ythe::TCPServer server(addr);
     server.Start();
     return 0;

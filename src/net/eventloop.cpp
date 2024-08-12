@@ -88,6 +88,9 @@ void EventLoop::Loop()
 
 void EventLoop::Stop()
 {
+    if(mIsLooping == false)
+        return;
+        
     mIsLooping = false;
     INFOLOG("%s", "Stop EventLoop")
     mWakeUpEvent->Wakeup();

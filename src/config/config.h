@@ -4,11 +4,7 @@
 #include <tinyxml/tinyxml.h>
 
 #define READ_XML_NODE(name, parent) \
-TiXmlElement* name##_node = parent->FirstChildElement(#name); \
-if (!name##_node) { \
-  printf("Failed to read node [%s]\n", #name); \
-  exit(0); \
-}                                   \
+TiXmlElement* name##_node = parent->FirstChildElement(#name);
 
 #define READ_STR_FROM_XML_NODE(name, parent) \
 TiXmlElement* name##_node = parent->FirstChildElement(#name); \
@@ -30,9 +26,14 @@ public:
     int            mLogMaxFileSize;
     int            mLogSyncInterval;
 
-    std::string    mIp;
-    int            mPort;
+    std::string    mServerIp;
+    int            mServerPort;
+    int            mSeverBufferSize;
     int            mIOThreadNums;
+
+    std::string    mConnectIp;
+    int            mConnectPort;
+    int            mClientBufferSize;
 
     TiXmlDocument* mXmlDocument;
 

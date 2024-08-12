@@ -10,7 +10,6 @@ Timer::Timer(): FdEvent()
 
     // 设置 mFd 监听事件和回调函数
     SetFdEvent(IN_EVENT, std::bind(&Timer::onTimer, this));
-    SetEpollET();
 }
 
 void Timer::AddTimerEvent(const TimerEvent::sp& timeEvent)

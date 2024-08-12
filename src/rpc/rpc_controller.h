@@ -8,18 +8,18 @@ namespace ythe {
 
 class RpcController: public google::protobuf::RpcController {
 private:
-    int32_t       mErrorCode = 0;
-    std::string   mErrorInfo;
-    std::string   mMsgId;
+    int32_t       mErrorCode  = 0;
+    std::string   mErrorInfo  = "";
+    std::string   mMsgId      = "";
 
-    bool          mIsFailed;
-    bool          mIsCanceled;
-    bool          mIsFinished;
+    bool          mIsFailed   = false;
+    bool          mIsCanceled = false;
+    bool          mIsFinished = false;
 
-    IPNetAddr::sp mLocalAddr;
-    IPNetAddr::sp mPeerAddr;
+    IPNetAddr::sp mLocalAddr   = nullptr;
+    IPNetAddr::sp mPeerAddr    = nullptr;
 
-    int           mTimeout = 1000; // ms
+    int           mTimeout     = 1000; // ms
 
 public:
     RpcController() { DEBUGLOG("%s", "RpcController") }

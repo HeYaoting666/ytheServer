@@ -19,6 +19,10 @@ public:
     ~RpcChannel() override;
 
 public:
+    void ConnectToServer() { if(mClient) mClient->TCPConnect(); }
+
+    void DisConnectFomServer() { if(mClient) mClient->TCPDisConnect(); }
+
     void CallMethod(const google::protobuf::MethodDescriptor* method,
                    google::protobuf::RpcController* rpcController,
                    const google::protobuf::Message* reqPb,

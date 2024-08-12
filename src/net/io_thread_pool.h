@@ -16,7 +16,7 @@ public:
         static IOThreadPool instance;
         return &instance;
     }
-    void Init();
+    void Init(int size);
 
     IOThreadPool(const IOThreadPool&) = delete;
 

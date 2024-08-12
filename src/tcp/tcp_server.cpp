@@ -1,10 +1,13 @@
 #include "tcp_server.h"
-#include <iostream>
+#include "../config/config.h"
 
 namespace ythe {
 
 TCPServer::TCPServer(const IPNetAddr::sp& localAddrr)
-{
+{   
+    mBuffersize = Config::GetInstance()->mSeverBufferSize;
+    mIOThreadPoolNum = Config::GetInstance()->mIOThreadNums;
+
     // 初始化 TCPAcceptor
     mAcceptor = std::make_shared<TCPAcceptor>(localAddrr);
     mLocalAddr = mAcceptor->GetLocalAddr();
@@ -19,11 +22,11 @@ TCPServer::TCPServer(const IPNetAddr::sp& localAddrr)
 
     // 初始化 从线程 IOThreadGroup
     mIOThreadPool = IOThreadPool::GetInstance();
-    mIOThreadPool->Init();
+    mIOThreadPool->Init(mIOThreadPoolNum);
 
     // 初始化 定时器事件 m_clear_client_timer_event
-    // mTimerEvent = std::make_shared<TimerEvent>(10000, true, std::bind(&TCPServer::onClearClientTimerFunc, this));
-    // mEventLoop->AddTimerEvent(mTimerEvent);
+    mTimerEvent = std::make_shared<TimerEvent>(10000, true, std::bind(&TCPServer::onClearClientTimerFunc, this));
+    mEventLoop->AddTimerEvent(mTimerEvent);
 
     INFOLOG("rocket TCPServer listen success on [%s]", mLocalAddr->ToString().c_str())
 }
@@ -63,7 +66,7 @@ void TCPServer::onAccept()
     clientFdEvent->SetNonBlock(); // ET模式设置非阻塞
 
     auto conn = std::make_shared<TCPConnection>(
-        clientFdEvent, threadHander->GetEventLoop(), 128, mLocalAddr, clientAddr);
+        clientFdEvent, threadHander->GetEventLoop(), mBuffersize, mLocalAddr, clientAddr);
     conn->SetState(Connected);
 
     mConnClients.insert(conn);

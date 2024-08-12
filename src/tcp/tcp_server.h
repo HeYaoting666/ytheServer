@@ -11,8 +11,11 @@ private:
     FdEvent*                          mListenEvent;   // 监听套接字事件描述符管理
     EventLoop*                        mEventLoop;     // 主线程事件循环，负责监听连接套接字
     IPNetAddr::sp                     mLocalAddr;
+    int                               mBuffersize;
 
     IOThreadPool*                     mIOThreadPool;
+    int                               mIOThreadPoolNum;
+
     std::set<TCPConnection::sp>       mConnClients;
     std::unordered_map<int, FdEvent*> mClientFdEventsMap; //管理客户端连接 socket 和 fdEvent
 

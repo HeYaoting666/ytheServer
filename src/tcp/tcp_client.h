@@ -12,8 +12,9 @@ public:
     typedef std::shared_ptr<TCPClient> sp;
 
 private:
-    FdEvent*          mFdEvent   = nullptr;
-    EventLoop*        mEventLoop = nullptr;
+    FdEvent*          mFdEvent    = nullptr;
+    EventLoop*        mEventLoop  = nullptr;
+    int               mBufferSize = 128;
     TCPConnection::sp mConn;
     IPNetAddr::sp     mPeerAddr;   // 对端地址
     IPNetAddr::sp     mLocalAddr;  // 本地地址
@@ -29,6 +30,8 @@ public:
 public:
     void TCPConnect();
 
+    void TCPDisConnect();
+
     void SendData(const TCPBuffer::sp& sendData);
 
     void RecvData(TCPBuffer::sp& recvData);
@@ -37,9 +40,13 @@ public:
         mEventLoop->AddTimerEvent(timerEvent);
     }
 
+    void StopEventLoop() { mEventLoop->Stop(); }
+
+    void StartEventLoop() { mEventLoop->Loop(); }
+
     IPNetAddr::sp GetLocalAddr() const { return mLocalAddr; }
 
-    IPNetAddr::sp GetPeerAddr() const { return mPeerAddr; }
+    IPNetAddr::sp GetPeerAddr()  const { return mPeerAddr; }
 
 private:;
     // 处理连接逻辑

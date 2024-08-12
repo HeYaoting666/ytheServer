@@ -3,5 +3,3 @@
 build
 logs
 
-# config
-*.xml

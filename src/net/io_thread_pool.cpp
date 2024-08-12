@@ -1,11 +1,10 @@
 #include "io_thread_pool.h"
-#include "../config/config.h"
 
 namespace ythe {
 
-void IOThreadPool::Init()
+void IOThreadPool::Init(int size)
 {
-    mSize = Config::GetInstance()->mIOThreadNums;
+    mSize = size;
     mIOThreadGroup.resize(mSize);
     for(int i = 0; i < mSize; ++i) {
         mIOThreadGroup[i] = new IOThread();

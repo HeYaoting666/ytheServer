@@ -10,8 +10,6 @@ namespace ythe {
 RpcChannel::RpcChannel(const IPNetAddr::sp& peerAddr)
 {
     mClient = std::make_shared<TCPClient>(peerAddr);
-    mClient->TCPConnect();
-
     mCoder = new TinyPBCoder();
 }
 
@@ -36,7 +34,7 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method, go
     // 获取 msg_id
     // 如果 controller 指定了 msgId, 直接使用
     if(myController->GetMsgId().empty()) {
-        reqMessage->mMsgId = GetMsgID();
+        reqMessage->mMsgId = GetMsgID(10);
         myController->SetMsgId(reqMessage->mMsgId);
     } else {
         reqMessage->mMsgId = myController->GetMsgId();
@@ -57,20 +55,22 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method, go
         return;
     }
 
-    // TimerEvent::sp timeEvent = std::make_shared<TimerEvent>(myController->GetTimeout(), false, [myController, done]() mutable {
-    //     if (myController->Finished()) {
-    //         INFOLOG("%s | rpc is finished", myController->GetMsgId().c_str())
-    //         return;
-    //     }
+    //  记录超时事件
+    TimerEvent::sp timeEvent = std::make_shared<TimerEvent>(myController->GetTimeout(), false, [myController, done, this]() mutable {
+        if (myController->Finished()) {
+            DEBUGLOG("%s | rpc is finished", myController->GetMsgId().c_str())
+            return;
+        }
 
-    //     myController->StartCancel();
-    //     myController->SetError(ERROR_RPC_CALL_TIMEOUT, "rpc call timeout " + std::to_string(myController->GetTimeout()));
-    //     if(done) {
-    //         done->Run();
-    //     };
-    //     myController->SetFinished(true);
-    // });
-    // mClient->AddTimerEvent(timeEvent);
+        myController->StartCancel();
+        myController->SetError(ERROR_RPC_CALL_TIMEOUT, "rpc call timeout " + std::to_string(myController->GetTimeout()));
+        if(done) {
+            done->Run();
+        };
+        myController->SetFinished(true);
+        mClient->StopEventLoop();
+    });
+    mClient->AddTimerEvent(timeEvent);
     
     // 准备发送数据
     std::vector<AbstractProtocol::sp> reqMessages;

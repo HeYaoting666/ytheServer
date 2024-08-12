@@ -1,11 +1,11 @@
 #include "tcp_client.h"
+#include "../config/config.h"
 #include "../entity/error_code.h"
 
 namespace ythe {
 
 TCPClient::TCPClient(const IPNetAddr::sp &peerAddr): mPeerAddr(peerAddr)
 {
-    mEventLoop = new EventLoop();
     int fd = socket(mPeerAddr->GetFamily(), SOCK_STREAM, 0);
     if(fd < 0) {
         ERRORLOG("%s", "client error, failed to create fd")
@@ -14,10 +14,13 @@ TCPClient::TCPClient(const IPNetAddr::sp &peerAddr): mPeerAddr(peerAddr)
     mFdEvent = new FdEvent(fd);
     mFdEvent->SetNonBlock();
 
+    mEventLoop = new EventLoop();
+
+    mBufferSize = Config::GetInstance()->mClientBufferSize;
+
     initLocalAddr(); // 初始化本地地址
     mConn = std::make_shared<TCPConnection>(
-        mFdEvent, mEventLoop, 128, mLocalAddr, mPeerAddr, TCPConnectionByClient);
-        
+        mFdEvent, mEventLoop, mBufferSize, mLocalAddr, mPeerAddr, TCPConnectionByClient); 
 }
 
 TCPClient::~TCPClient()
@@ -43,6 +46,17 @@ void TCPClient::TCPConnect()
     }
 }
 
+void TCPClient::TCPDisConnect()
+{   if(mConn->GetState() == NotConnected)
+        return;
+    
+    mConn->SetState(NotConnected);
+    if(mEventLoop) 
+        mEventLoop->Stop();
+    if(mFdEvent) 
+        close(mFdEvent->GetFd());
+}
+
 void TCPClient::SendData(const TCPBuffer::sp& sendData)
 {
     if(mConn->GetState() != Connected) {
@@ -51,7 +65,7 @@ void TCPClient::SendData(const TCPBuffer::sp& sendData)
     }
     mConn->SetSendBuffer(sendData);
     mConn->ListenWriteEvent();
-    mEventLoop->Loop();
+    StartEventLoop();
 }
 
 void TCPClient::RecvData(TCPBuffer::sp& recvData)
