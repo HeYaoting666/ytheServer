@@ -10,14 +10,9 @@ private:
     std::function<void()> mCb;
 
 public:
-    explicit RpcClosure(const std::function<void()>& cb): mCb(cb)
-    {
-        DEBUGLOG("%s", "RpcClosure")
-    }
+    explicit RpcClosure(const std::function<void()>& cb): mCb(cb) { }
 
-    ~RpcClosure() override {
-        DEBUGLOG("%s", "~RpcClosure")
-    }
+    ~RpcClosure() override = default;
 
 public:
     void Run() override {

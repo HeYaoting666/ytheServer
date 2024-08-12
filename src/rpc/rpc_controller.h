@@ -22,9 +22,9 @@ private:
     int           mTimeout     = 1000; // ms
 
 public:
-    RpcController() { DEBUGLOG("%s", "RpcController") }
+    RpcController() = default;
 
-    ~RpcController() override { INFOLOG("%s", "~RpcController") }
+    ~RpcController() override = default;
 
 public:
     void          Reset() override;

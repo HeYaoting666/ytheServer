@@ -6,7 +6,7 @@
 
 int main() {
     auto configInstance = ythe::Config::GetInstance();
-    configInstance->Init("/root/cpp/ythe_server/config.xml");
+    configInstance->Init("/root/cpp/ytheServer/config.xml");
 
     auto logInstance = ythe::Logger::GetInstance();
     logInstance->Init();
@@ -40,9 +40,6 @@ int main() {
     
     // 定义rpc stub 执行rpc调用
     Compute_Stub computeStub(channel.get());
-    computeStub.Add(controller.get(), reqPb.get(), respPb.get(), closure.get());
-    sleep(2);
-    computeStub.Add(controller.get(), reqPb.get(), respPb.get(), closure.get());
     computeStub.Add(controller.get(), reqPb.get(), respPb.get(), closure.get());
     channel->DisConnectFomServer();
 

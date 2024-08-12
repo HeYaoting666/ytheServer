@@ -92,7 +92,7 @@ void EventLoop::Stop()
         return;
         
     mIsLooping = false;
-    INFOLOG("%s", "Stop EventLoop")
+    DEBUGLOG("%s", "Stop EventLoop")
     mWakeUpEvent->Wakeup();
 }
 

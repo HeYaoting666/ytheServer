@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <tinyxml/tinyxml.h>
+#include <tinyxml.h>
 
 #define READ_XML_NODE(name, parent) \
 TiXmlElement* name##_node = parent->FirstChildElement(#name);

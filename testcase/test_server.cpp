@@ -15,7 +15,7 @@ public:
 
 int main() {
     auto configInstance = ythe::Config::GetInstance();
-    configInstance->Init("/root/cpp/ythe_server/config.xml");
+    configInstance->Init("/root/cpp/ytheServer/config.xml");
 
     auto logInstance = ythe::Logger::GetInstance();
     logInstance->Init();
