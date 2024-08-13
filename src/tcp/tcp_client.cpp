@@ -42,7 +42,7 @@ void TCPClient::TCPConnect()
 {
     onConnect();
     if(mConnectErrorCode != 0) {
-        INFOLOG("client connect error, errorno: %d, error msg: %s", mConnectErrorCode, mConnectErrorInfo.c_str())
+        printf("client connect error, errorno: %d, error msg: %s\n", mConnectErrorCode, mConnectErrorInfo.c_str());
         exit(1);
     }
 }

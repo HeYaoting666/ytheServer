@@ -81,7 +81,7 @@ public:
 
     void operator=(const Logger&) = delete;
 
-    ~Logger() = default;
+    ~Logger() { stop(); }
 
 private:
     Logger() = default;
@@ -93,9 +93,9 @@ public:
 
     LogLevel           GetLogLevel() const { return mSetLevel; }
 
-    void               Stop();
-
 private:
+    void               stop();
+    
     void               syncLoop();
 };
 

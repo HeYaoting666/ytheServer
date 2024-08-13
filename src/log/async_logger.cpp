@@ -60,7 +60,7 @@ void AsyncLogger::loop() {
             std::time_t nowTime = std::chrono::system_clock::to_time_t(now);
             std::tm* nowTm = std::localtime(&nowTime);
             char date[32];
-            std::strftime(date, sizeof(date), "%Y%m%d", nowTm);
+            std::strftime(date, sizeof(date), "%Y-%m-%d", nowTm);
             std::string currentDate(date);
 
             // 判断日期是否相同，不相同写入新文件，否则在原先的 mFIle 中写入日志
@@ -77,7 +77,7 @@ void AsyncLogger::loop() {
             // 判断文件大小是否达到上限，若达到上限则文件序号加 1 写入新文件中，否则在原先的 mFIle 中写入日志
             if(ftell(mFile) >= mFileMaxSize) {
                 fclose(mFile);
-                std::string logFileName = mFilePath + mFileName + "_" + mDate + "_log" + std::to_string(++mNo);
+                std::string logFileName = mFilePath + mFileName + "_" + mDate + "_log." + std::to_string(++mNo);
                 mFile = fopen(logFileName.c_str(), "a");
             }
 

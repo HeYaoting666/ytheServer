@@ -31,8 +31,10 @@ void Logger::Init()
 }
 
 
-void Logger::Stop()
+void Logger::stop()
 {
+    if (mIsPrint) return;
+
     syncLoop();
     mpAsyncLogger->Stop();
     mpAsyncLogger->Flush();
