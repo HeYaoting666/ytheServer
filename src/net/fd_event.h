@@ -6,7 +6,6 @@
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <sys/timerfd.h>
-#include "../log/logger.h"
 
 namespace ythe {
 

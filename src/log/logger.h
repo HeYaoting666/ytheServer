@@ -7,6 +7,8 @@
 #include <mutex>
 #include <condition_variable>
 #include "async_logger.h"
+#include "../net/eventloop.h"
+#include "../net/timer_event.h"
 
 
 #define DEBUGLOG(str, ...) \
@@ -57,7 +59,6 @@ std::string logLevelToString (LogLevel level);
 
 LogLevel stringToLogLevel(const std::string& strLevel);
 
-
 class Logger {
 private:
     bool                     mIsPrint  = true;
@@ -67,6 +68,7 @@ private:
     std::mutex               mMutex;
 
     AsyncLogger::sp          mpAsyncLogger;
+    TimerEvent::sp           mTimerEvent;
 
 public:
     static Logger* GetInstance() { 
@@ -79,20 +81,22 @@ public:
 
     void operator=(const Logger&) = delete;
 
-private:
-    Logger() = default;
-    
     ~Logger() = default;
 
+private:
+    Logger() = default;
+
 public:
-    void PushLog (const std::string& msg);
+    void               PushLog (const std::string& msg);
 
-    LogLevel GetLogLevel() const { return mSetLevel; }
+    TimerEvent::sp     GetTimeEvent() const { return mTimerEvent; }
 
-    void Stop();
+    LogLevel           GetLogLevel() const { return mSetLevel; }
+
+    void               Stop();
 
 private:
-    void syncLoop();
+    void               syncLoop();
 };
 
 }

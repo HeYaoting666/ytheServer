@@ -6,7 +6,7 @@
 
 int main() {
     auto configInstance = ythe::Config::GetInstance();
-    configInstance->Init("/root/cpp/ytheServer/config.xml");
+    configInstance->Init("/root/cpp/ytheServer/config_client.xml");
 
     auto logInstance = ythe::Logger::GetInstance();
     logInstance->Init();

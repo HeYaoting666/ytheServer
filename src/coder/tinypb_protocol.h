@@ -1,6 +1,5 @@
 #pragma once
 #include "../abstract/abstract_protocol.h"
-#include <memory>
 
 namespace ythe {
 
@@ -22,9 +21,6 @@ public:
     std::string   mErrInfo;            // 错误信息
 
     std::string   mPbData;             // 序列化数据
-
-    bool          mParseSuccess = false;
-
 public:
     TinyPBProtocol() = default;
 

@@ -1,4 +1,5 @@
 #include "tcp_client.h"
+#include "../log/logger.h"
 #include "../config/config.h"
 #include "../entity/error_code.h"
 

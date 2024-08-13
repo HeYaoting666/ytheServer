@@ -39,10 +39,12 @@ void Config::Init(const char *xmlFile)
     if(server_node) {
         READ_STR_FROM_XML_NODE(ip, server_node)
         READ_STR_FROM_XML_NODE(port, server_node)
+        READ_STR_FROM_XML_NODE(type, server_node)
         READ_STR_FROM_XML_NODE(buffer_size, server_node)
         READ_STR_FROM_XML_NODE(io_threads_num, server_node)
         mServerIp        = ip_str;
-        mServerPort       = std::stoi(port_str);
+        mServerPort      = std::stoi(port_str);
+        mServerType      = type_str;
         mSeverBufferSize = std::stoi(buffer_size_str);
         mIOThreadNums    = std::stoi(io_threads_num_str);
         printf("SERVER -- SERVER IP[%s], SERVER PORT[%d], BUFFER SIZE[%d], IO THREAD NUMBERS[%d]\n",

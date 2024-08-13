@@ -18,34 +18,24 @@ void Logger::Init()
     if (mIsPrint) // 如果设置了打印日志选项，则不启动异步写日志线程
         return;
     
+    // 创建异步写日志线程
     mpAsyncLogger = std::make_shared<AsyncLogger>(
-        Config::GetInstance()->mLogFileName + "_rpc",
+        Config::GetInstance()->mLogFileName + "_" + Config::GetInstance()->mServerType,
         Config::GetInstance()->mLogFilePath,
         Config::GetInstance()->mLogMaxFileSize
     );
+
+    // 设置定时任务
+    mTimerEvent = std::make_shared<TimerEvent>(Config::GetInstance()->mLogSyncInterval, 
+        true, std::bind(&Logger::syncLoop, this));
 }
+
 
 void Logger::Stop()
 {
     syncLoop();
     mpAsyncLogger->Stop();
     mpAsyncLogger->Flush();
-}
-
-std::string GetLogEvent(LogLevel logLevel, std::string fileName, std::string line)
-{
-    std::string nowTimeStr = GetCurrentDateTime();
-
-    pid_t pid = GetPid();
-    pid_t threadId = GetThreadId();
-
-    std::stringstream ss;
-    ss << "[" << std::setw(5) << std::left << logLevelToString(logLevel) << "] "
-       << "[" << nowTimeStr << "] "
-       << "[" << std::setw(50) << std::left << (fileName + ":" + line) << "] "
-       << "[Pid: " << std::setw(5) << pid << ", " << "ThreadId: " << threadId << "]\t";
-
-    return ss.str();
 }
 
 void Logger::PushLog(const std::string& msg)
@@ -71,6 +61,22 @@ void Logger::syncLoop()
     if(!tmp.empty()) {
         mpAsyncLogger->PushLogBuffer(tmp);
     }
+}
+
+std::string GetLogEvent(LogLevel logLevel, std::string fileName, std::string line)
+{
+    std::string nowTimeStr = GetCurrentDateTime();
+
+    pid_t pid = GetPid();
+    pid_t threadId = GetThreadId();
+
+    std::stringstream ss;
+    ss << "[" << std::setw(5) << std::left << logLevelToString(logLevel) << "] "
+       << "[" << nowTimeStr << "] "
+       << "[" << std::setw(50) << std::left << (fileName + ":" + line) << "] "
+       << "[Pid: " << std::setw(5) << pid << ", " << "ThreadId: " << threadId << "]\t";
+
+    return ss.str();
 }
 
 LogLevel stringToLogLevel(const std::string& strLevel) 

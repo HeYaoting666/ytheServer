@@ -1,4 +1,6 @@
 #pragma once
+#include <thread>
+#include <condition_variable>
 #include "eventloop.h"
 
 namespace ythe {

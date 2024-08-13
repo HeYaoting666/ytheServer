@@ -1,6 +1,4 @@
 #pragma once
-
-#include "../log/logger.h"
 #include "../abstract/net_addr.h"
 
 namespace ythe {

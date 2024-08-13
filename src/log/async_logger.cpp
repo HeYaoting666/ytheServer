@@ -77,7 +77,7 @@ void AsyncLogger::loop() {
             // 判断文件大小是否达到上限，若达到上限则文件序号加 1 写入新文件中，否则在原先的 mFIle 中写入日志
             if(ftell(mFile) >= mFileMaxSize) {
                 fclose(mFile);
-                std::string logFileName = mFilePath + mFileName + "_" + mDate + "_log." + std::to_string(++mNo);
+                std::string logFileName = mFilePath + mFileName + "_" + mDate + "_log" + std::to_string(++mNo);
                 mFile = fopen(logFileName.c_str(), "a");
             }
 

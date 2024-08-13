@@ -1,4 +1,5 @@
 #include "connection.h"
+#include "../log/logger.h"
 #include "../coder/tinypb_coder.h"
 #include "../coder/tinypb_protocol.h"
 #include "../rpc/rpc_dispatcher.h"

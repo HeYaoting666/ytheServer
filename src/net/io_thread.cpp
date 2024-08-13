@@ -1,5 +1,5 @@
 #include "io_thread.h"
-#include <iostream>
+#include "../log/logger.h"
 
 namespace ythe {
 

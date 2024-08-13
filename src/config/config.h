@@ -1,5 +1,4 @@
 #pragma once
-
 #include <string>
 #include <tinyxml.h>
 
@@ -28,6 +27,7 @@ public:
 
     std::string    mServerIp;
     int            mServerPort;
+    std::string    mServerType;
     int            mSeverBufferSize;
     int            mIOThreadNums;
 

@@ -31,7 +31,6 @@ public:
     bool    IsCancel() const      { return mIsCanceled; }
 
     bool    IsRepeated() const    { return mIsRepeated; }
-
 };
 
 }

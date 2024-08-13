@@ -1,4 +1,6 @@
 #include "buffer.h"
+#include "../log/logger.h"
+#include <algorithm>
 
 namespace ythe {
 

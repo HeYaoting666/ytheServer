@@ -8,8 +8,6 @@
 
 namespace ythe {
 
-class TCPConnection; // 互相包含头文件，声明 TCPConnection 类
-
 class RpcDispatcher {
 public:
     typedef std::shared_ptr<google::protobuf::Service> serviceSp;

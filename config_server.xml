@@ -2,9 +2,9 @@
 <root>
   <log>
     <log_is_print>1</log_is_print>
-    <log_level>INFO</log_level>
-    <log_file_name>test_rpc_server</log_file_name>
-    <log_file_path>/root/cpp/test/testcase/log/</log_file_path>
+    <log_level>DEBUG</log_level>
+    <log_file_name>test_server</log_file_name>
+    <log_file_path>/root/cpp/ytheServer/testcase/logs/</log_file_path>
     <log_max_file_size>1000000000</log_max_file_size>
     <log_sync_interval>500</log_sync_interval>
   </log>
@@ -12,13 +12,8 @@
   <server>
     <ip>127.0.0.1</ip>
     <port>9000</port>
+    <type>rpc</type>
     <buffer_size>128</buffer_size>
     <io_threads_num>1</io_threads_num>
   </server>
-
-  <client>
-    <connect_ip>127.0.0.1</connect_ip>
-    <connect_port>9000</connect_port>
-    <buffer_size>128</buffer_size>
-  </client>
 </root>

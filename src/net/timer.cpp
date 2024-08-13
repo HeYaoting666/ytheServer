@@ -14,6 +14,8 @@ Timer::Timer(): FdEvent()
 
 void Timer::AddTimerEvent(const TimerEvent::sp& timeEvent)
 {
+    if (!timeEvent) return;
+                
     bool needReset = false;
     {
         std::lock_guard<std::mutex> lock(std::mutex);

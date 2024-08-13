@@ -1,4 +1,5 @@
 #include "eventloop.h"
+#include "../log/logger.h"
 
 namespace ythe {
 
@@ -52,9 +53,7 @@ void EventLoop::Loop()
             if(cb) cb();
         }
 
-        // DEBUGLOG("%s", "now begin to epoll_wait")
         int numEvents = epoll_wait(mEpollfd, events, MAX_EVENT_NUMBER, -1);
-        // DEBUGLOG("now end epoll_wait, num_events = %d", numEvents)
         if (numEvents < 0 && errno != EINTR) {
             ERRORLOG("epoll_wait error, errno=%d, error=%s", errno, strerror(errno))
             continue;

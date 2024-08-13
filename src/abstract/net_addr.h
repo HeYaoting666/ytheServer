@@ -1,5 +1,4 @@
 #pragma once
-
 #include <arpa/inet.h>
 #include <memory>
 

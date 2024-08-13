@@ -1,4 +1,5 @@
 #include "tcp_server.h"
+#include "../log/logger.h"
 #include "../config/config.h"
 
 namespace ythe {
@@ -24,9 +25,10 @@ TCPServer::TCPServer(const IPNetAddr::sp& localAddrr)
     mIOThreadPool = IOThreadPool::GetInstance();
     mIOThreadPool->Init(mIOThreadPoolNum);
 
-    // 初始化 定时器事件 m_clear_client_timer_event
+    // 初始化 定时器事件(日志写入，清除断开连接)
     mTimerEvent = std::make_shared<TimerEvent>(10000, true, std::bind(&TCPServer::onClearClientTimerFunc, this));
     mEventLoop->AddTimerEvent(mTimerEvent);
+    mEventLoop->AddTimerEvent(Logger::GetInstance()->GetTimeEvent());
 
     INFOLOG("rocket TCPServer listen success on [%s]", mLocalAddr->ToString().c_str())
 }
