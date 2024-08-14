@@ -122,7 +122,7 @@ void EventLoop::addFdEventToEpoll(FdEvent* fdEvent)
     int rt = epoll_ctl(mEpollfd, op, fdEvent->GetFd(), &events);
     if (rt == -1) {
         ERRORLOG("failed epoll_ctl when add fd[%d], errno=%d, error=%s", fdEvent->GetFd(), errno, strerror(errno));
-        exit(0);
+        exit(1);
     }
     mListenFds.insert(fdEvent->GetFd());
 
@@ -150,7 +150,7 @@ void EventLoop::deleteFdEventFromEpoll(FdEvent* fdEvent)
     int rt = epoll_ctl(mEpollfd, op, fdEvent->GetFd(), nullptr);
     if (rt == -1) {
         ERRORLOG("failed epoll_ctl when delete fd[%d], errno=%d, error=%s", fdEvent->GetFd(), errno, strerror(errno));
-        exit(0);
+        exit(1);
     }
 
     mListenFds.erase(fdEvent->GetFd());
