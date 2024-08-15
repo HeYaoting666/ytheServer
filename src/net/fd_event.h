@@ -34,7 +34,7 @@ public:
 
     explicit FdEvent(int fd): mFd(fd) { }
 
-    virtual ~FdEvent() { if(mFd > 0) close(mFd); };
+    virtual ~FdEvent() = default;
 
 public:
     // 设置监听事件和相应的回调函数，用于后续epoll事件注册

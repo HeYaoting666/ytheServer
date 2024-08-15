@@ -81,8 +81,8 @@ void TCPServer::onClearClientTimerFunc()
     for (auto it = mConnClients.begin(); it != mConnClients.end(); ) {
         auto conn = *it;
         if (conn != nullptr && conn.use_count() > 0 && conn->GetState() == Closed) {
-            DEBUGLOG("TCPConnection [fd:%d] will delete, state=%d", conn->GetFd(), conn->GetState())
-            
+            DEBUGLOG("delete  TCPConnection [fd:%d], state=%d", conn->GetFd(), conn->GetState())
+            close(conn->GetFd());
             delete mClientFdEventsMap[conn->GetFd()];
             mClientFdEventsMap.erase(conn->GetFd());
 

@@ -17,7 +17,7 @@ private:
 public:
     Timer();
 
-    ~Timer() override = default;
+    ~Timer() { if(mFd > 0) close(mFd); }
     
 public:
     void AddTimerEvent(const TimerEvent::sp& timeEvent);

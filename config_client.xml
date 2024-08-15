@@ -10,7 +10,7 @@
   </log>
 
   <client>
-    <connect_ip>127.0.0.1</connect_ip>
+    <connect_ip>172.18.206.159</connect_ip>
     <connect_port>9000</connect_port>
     <buffer_size>128</buffer_size>
   </client>

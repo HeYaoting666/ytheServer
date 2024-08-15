@@ -13,9 +13,11 @@ EventLoop::EventLoop()
     }
 
     mWakeUpEvent = new WakeUpEvent();
+    DEBUGLOG("create wakeup fd[%d]", mWakeUpEvent->GetFd())
     addFdEventToEpoll(mWakeUpEvent);
 
     mTimer = new Timer();
+    DEBUGLOG("create timer fd[%d]", mTimer->GetFd())
     addFdEventToEpoll(mTimer);
 
     INFOLOG("success create event loop in thread[%d]", mThreadId)

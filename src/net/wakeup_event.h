@@ -8,7 +8,7 @@ class WakeUpEvent : public FdEvent {
 public:
     WakeUpEvent();
     
-    ~WakeUpEvent() override = default;
+    ~WakeUpEvent() { if(mFd > 0) close(mFd); }
 
 public:
     void Wakeup();

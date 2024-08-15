@@ -10,7 +10,6 @@ WakeUpEvent::WakeUpEvent(): FdEvent()
         ERRORLOG("failed to create event loop, eventfd create error, error info[%d]", errno)
         exit(0);
     }
-    INFOLOG("create wakeup fd[%d]", mFd)
 
     auto cb = [this]() { // 定义回调函数
         char buf[8];
