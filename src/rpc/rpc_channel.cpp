@@ -73,18 +73,18 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method, go
     });
     mClient->AddTimerEvent(timeEvent);
     
-    // 准备发送数据
+    // 发送数据
     std::vector<AbstractProtocol::sp> reqMessages;
     reqMessages.push_back(reqMessage);
-    auto dataToSend = std::make_shared<TCPBuffer>(128);
-    mCoder->Encode(reqMessages, dataToSend);
-    mClient->SendData(dataToSend);
-
+    TCPBuffer::sp dataToSend = std::make_shared<TCPBuffer>(128);
     // 接收数据
     std::vector<AbstractProtocol::sp> respMessages;
     TCPBuffer::sp dataToRecv;
-    mClient->RecvData(dataToRecv);
+    // 调用方法
+    mCoder->Encode(reqMessages, dataToSend);
+    mClient->OneCall(dataToSend, dataToRecv);
     mCoder->Decode(dataToRecv, respMessages);
+    // 获取结果
     for(const auto& respMsg : respMessages) {
         if(reqMessage->mMsgId != respMsg->mMsgId)
             continue;

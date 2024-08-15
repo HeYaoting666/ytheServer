@@ -7,12 +7,12 @@ namespace ythe {
 
 TCPClient::TCPClient(const IPNetAddr::sp &peerAddr): mPeerAddr(peerAddr)
 {
-    int fd = socket(mPeerAddr->GetFamily(), SOCK_STREAM, 0);
-    if(fd < 0) {
+    mConnFd = socket(mPeerAddr->GetFamily(), SOCK_STREAM, 0);
+    if(mConnFd < 0) {
         ERRORLOG("%s", "client error, failed to create fd")
         return;
     }
-    mFdEvent = new FdEvent(fd);
+    mFdEvent = new FdEvent(mConnFd);
     mFdEvent->SetNonBlock();
 
     mEventLoop = new EventLoop();
@@ -26,6 +26,9 @@ TCPClient::TCPClient(const IPNetAddr::sp &peerAddr): mPeerAddr(peerAddr)
 
 TCPClient::~TCPClient()
 {
+    if(mConnFd > 0)
+        close(mConnFd);
+
     if(mEventLoop) {
         mEventLoop->Stop();
         delete mEventLoop;
@@ -54,35 +57,27 @@ void TCPClient::TCPDisConnect()
     mConn->SetState(NotConnected);
     if(mEventLoop) 
         mEventLoop->Stop();
-    if(mFdEvent) 
-        close(mFdEvent->GetFd());
+    if(mConnFd > 0) 
+        close(mConnFd);
 }
 
-void TCPClient::SendData(const TCPBuffer::sp& sendData)
+void TCPClient::OneCall(const TCPBuffer::sp &sendData, TCPBuffer::sp &recvData)
 {
     if(mConn->GetState() != Connected) {
-        ERRORLOG("fd[%d] no connect, sendData error", mConn->GetFd())
+        ERRORLOG("fd[%d] no connect, one call error", mConnFd)
         return;
     }
     mConn->SetSendBuffer(sendData);
     mConn->ListenWriteEvent();
     StartEventLoop();
-}
-
-void TCPClient::RecvData(TCPBuffer::sp& recvData)
-{
-    if(mConn->GetState() != Connected) {
-        ERRORLOG("fd[%d] no connect, sendData error", mConn->GetFd())
-        return;
-    }
     recvData = mConn->GetRecvBuffer();
 }
 
 void TCPClient::onConnect()
 {
-    int ret = connect(mFdEvent->GetFd(), mPeerAddr->GetSockAddr(), mPeerAddr->GetSockLen());
+    int ret = connect(mConnFd, mPeerAddr->GetSockAddr(), mPeerAddr->GetSockLen());
     if (ret == -1 && errno == EINPROGRESS) {
-        ret = connect(mFdEvent->GetFd(), mPeerAddr->GetSockAddr(), mPeerAddr->GetSockLen());
+        ret = connect(mConnFd, mPeerAddr->GetSockAddr(), mPeerAddr->GetSockLen());
         if (ret == -1 && errno != EINPROGRESS) {
             mConnectErrorCode = ERROR_FAILED_CONNECT;
             mConnectErrorInfo = "connect unknown error, sys error = " + std::string(strerror(errno));
@@ -113,7 +108,7 @@ void TCPClient::initLocalAddr()
     sockaddr_in localSocketAddr{};
     socklen_t len = sizeof(localSocketAddr);
 
-    int ret = getsockname(mFdEvent->GetFd(), reinterpret_cast<sockaddr*>(&localSocketAddr), &len);
+    int ret = getsockname(mConnFd, reinterpret_cast<sockaddr*>(&localSocketAddr), &len);
     if(ret != 0) {
         ERRORLOG("init local addr error, getsockname error, [errno=%d, error=%s]", errno, strerror(errno));
         return;

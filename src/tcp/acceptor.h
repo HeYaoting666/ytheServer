@@ -1,4 +1,5 @@
 #pragma once
+#include <unistd.h>
 #include "ip_net_addr.h"
 
 namespace ythe {
@@ -18,6 +19,7 @@ private:
 public:
     explicit TCPAcceptor(const IPNetAddr::sp& localAddr); // socket(), bind(), listen()
 
+    ~TCPAcceptor() { if(mListenfd > 0) close(mListenfd); }
 public:
     std::pair<int, IPNetAddr::sp> TCPAccept(); // 处理tcp连接，返回<连接套接字, 客户端地址>
 

@@ -12,6 +12,7 @@ public:
     typedef std::shared_ptr<TCPClient> sp;
 
 private:
+    int               mConnFd     = -1;
     FdEvent*          mFdEvent    = nullptr;
     EventLoop*        mEventLoop  = nullptr;
     int               mBufferSize = 128;
@@ -32,9 +33,7 @@ public:
 
     void TCPDisConnect();
 
-    void SendData(const TCPBuffer::sp& sendData);
-
-    void RecvData(TCPBuffer::sp& recvData);
+    void OneCall(const TCPBuffer::sp& sendData, TCPBuffer::sp& recvData);
 
     void AddTimerEvent(const TimerEvent::sp& timerEvent) {
         mEventLoop->AddTimerEvent(timerEvent);
