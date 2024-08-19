@@ -1,5 +1,5 @@
 #include "wakeup_event.h"
-#include "../log/logger.h"
+#include "src/log/logger.h"
 
 namespace ythe {
 

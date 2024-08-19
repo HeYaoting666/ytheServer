@@ -1,14 +1,15 @@
 #include "io_thread.h"
-#include "../log/logger.h"
+#include "src/log/logger.h"
 
 namespace ythe {
 
 ythe::IOThread::IOThread()
 {
     mThread = std::thread(&IOThread::loop, this);
-
-    std::unique_lock<std::mutex> lock(mInitMutex);
-    mInitCond.wait(lock, [this](){ return mInitDone; }); // 等待线程初始化完成
+    {
+        std::unique_lock<std::mutex> lock(mInitMutex);
+        mInitCond.wait(lock, [this](){ return mInitDone; }); // 等待线程初始化完成
+    }
     DEBUGLOG("IOThread [%d] create success", mThreadId)
 }
 
@@ -22,7 +23,6 @@ IOThread::~IOThread() {
 
 void IOThread::Start()
 {
-    DEBUGLOG("Now invoke IOThread [%d]", mThreadId)
     {
         std::lock_guard<std::mutex> lock(mStartMutex);
         mStart = true;
@@ -55,7 +55,6 @@ void IOThread::loop()
 
     DEBUGLOG("IOThread [%d] start loop ", mThreadId)
     mEventLoop->Loop();
-    DEBUGLOG("IOThread [%d] end loop ", mThreadId)
 }
 
 }

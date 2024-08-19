@@ -2,7 +2,7 @@
 
 #include <vector>
 #include "abstract_protocol.h"
-#include "../tcp/buffer.h"
+#include "src/tcp/buffer.h"
 
 namespace ythe {
 

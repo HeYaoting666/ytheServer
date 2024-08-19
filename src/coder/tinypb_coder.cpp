@@ -2,8 +2,8 @@
 #include <cstring>
 #include "tinypb_coder.h"
 #include "tinypb_protocol.h"
-#include "../utils/utils.h"
-#include "../log/logger.h"
+#include "src/utils/utils.h"
+#include "src/log/logger.h"
 
 namespace ythe {
 

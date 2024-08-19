@@ -2,8 +2,8 @@
 #include <google/protobuf/service.h>
 #include <google/protobuf/descriptor.h>
 
-#include "../tcp/ip_net_addr.h"
-#include "../tcp/tcp_client.h"
+#include "src/tcp/ip_net_addr.h"
+#include "src/tcp/tcp_client.h"
 #include "rpc_controller.h"
 
 namespace ythe {

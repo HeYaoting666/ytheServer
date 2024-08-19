@@ -1,8 +1,8 @@
-#include "../src/config/config.h"
-#include "../src/log/logger.h"
-#include "../pb/compute.pb.h"
-#include "../src/rpc/rpc_channel.h"
-#include "../src/rpc/rpc_closure.h"
+#include "src/config/config.h"
+#include "src/log/logger.h"
+#include "pb/compute.pb.h"
+#include "src/rpc/rpc_channel.h"
+#include "src/rpc/rpc_closure.h"
 
 int main() {
     auto configInstance = ythe::Config::GetInstance();

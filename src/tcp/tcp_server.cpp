@@ -1,6 +1,6 @@
 #include "tcp_server.h"
-#include "../log/logger.h"
-#include "../config/config.h"
+#include "src/log/logger.h"
+#include "src/config/config.h"
 
 namespace ythe {
 

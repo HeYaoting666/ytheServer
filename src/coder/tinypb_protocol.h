@@ -1,5 +1,5 @@
 #pragma once
-#include "../abstract/abstract_protocol.h"
+#include "src/abstract/abstract_protocol.h"
 
 namespace ythe {
 

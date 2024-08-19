@@ -1,8 +1,8 @@
-#include "../src/config/config.h"
-#include "../src/log/logger.h"
-#include "../src/rpc/rpc_dispatcher.h"
-#include "../src/tcp/tcp_server.h"
-#include "../pb/compute.pb.h"
+#include "src/config/config.h"
+#include "src/log/logger.h"
+#include "src/rpc/rpc_dispatcher.h"
+#include "src/tcp/tcp_server.h"
+#include "pb/compute.pb.h"
 
 class ComputeService : public Compute {
 public:

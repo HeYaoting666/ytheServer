@@ -1,6 +1,6 @@
 #include "timer.h"
-#include "../log/logger.h"
-#include "../utils/utils.h"
+#include "src/log/logger.h"
+#include "src/utils/utils.h"
 namespace ythe {
 
 Timer::Timer(): FdEvent()
@@ -23,7 +23,7 @@ void Timer::AddTimerEvent(const TimerEvent::sp& timeEvent)
         } else {
             auto it = mPendingEvents.begin();
             // 若插入任务的指定时间比所有任务的指定时间都要早，则需要重新修改定时任务指定时间
-            if((*it).second->GetArriveTime() > timeEvent->GetArriveTime())
+            if(timeEvent->GetArriveTime() < (*it).second->GetArriveTime())
                 needReset = true;
         }
         mPendingEvents.emplace(timeEvent->GetArriveTime(), timeEvent);
@@ -68,7 +68,6 @@ void Timer::onTimer()
         auto timeCb = timeEvent->GetCallBack();
         if(timeCb) timeCb();
 
-        // 把需要重复执行的 TimerEvent 再次添加至队列中
         if(timeEvent->IsRepeated()) {
             timeEvent->ResetArriveTime();   // 调整 arrive_time
             AddTimerEvent(timeEvent);      // 添加回队列中，重新设置timer_fd

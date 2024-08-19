@@ -1,7 +1,7 @@
 #include "tcp_client.h"
-#include "../log/logger.h"
-#include "../config/config.h"
-#include "../entity/error_code.h"
+#include "src/log/logger.h"
+#include "src/config/config.h"
+#include "src/entity/error_code.h"
 
 namespace ythe {
 

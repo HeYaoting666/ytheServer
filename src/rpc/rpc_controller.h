@@ -2,7 +2,7 @@
 #include <string>
 #include <google/protobuf/service.h>
 #include <google/protobuf/stubs/callback.h>
-#include "../tcp/ip_net_addr.h"
+#include "src/tcp/ip_net_addr.h"
 
 namespace ythe {
 

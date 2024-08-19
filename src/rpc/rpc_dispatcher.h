@@ -3,8 +3,8 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 
-#include "../tcp/ip_net_addr.h"
-#include "../coder/tinypb_protocol.h"
+#include "src/tcp/ip_net_addr.h"
+#include "src/coder/tinypb_protocol.h"
 
 namespace ythe {
 

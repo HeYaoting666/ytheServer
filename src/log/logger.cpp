@@ -5,8 +5,8 @@
 #include <csignal>
 #include <sys/time.h>
 #include "logger.h"
-#include "../config/config.h"
-#include "../utils/utils.h"
+#include "src/config/config.h"
+#include "src/utils/utils.h"
 
 
 namespace ythe {

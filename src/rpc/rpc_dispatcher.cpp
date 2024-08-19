@@ -1,9 +1,9 @@
 #include "rpc_dispatcher.h"
 #include "rpc_controller.h"
 #include "rpc_closure.h"
-#include "../log/logger.h"
-#include "../tcp/connection.h"
-#include "../entity/error_code.h"
+#include "src/log/logger.h"
+#include "src/tcp/connection.h"
+#include "src/entity/error_code.h"
 
 namespace ythe {
 
