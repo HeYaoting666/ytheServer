@@ -1030,7 +1030,7 @@ write(sockfd, buf, len);
 
 mmap() 系统调用函数会直接把内核缓冲区里的数据「映射」到用户空间，这样，操作系统内核与用户空间就不需要再进行任何的数据拷贝操作。
 
-![](E:\秋招\简历-秋招\项目\image\mmap + write 零拷贝.png)
+![](./image/mmap+write.png)
 
 具体过程如下： 
 
