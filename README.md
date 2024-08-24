@@ -1,10 +1,10 @@
 # 项目架构
 
-![](.\image\框架.png)
+![](./image/框架.png)
 
 # 项目网络框架
 
-![](.\image\网络框架.png)
+![](./image/网络框架.png)
 
 
 
@@ -207,7 +207,7 @@ RRORLOG(str, ...)
 
 ​		写日志异步线程**AsyncLogger**在读取**BlockQueue**阻塞等待，当其中有数据到来时，获取其中的数据并将其内容写入至磁盘，写入时会根据日期和文件大小来判断是否创建新文件写入。
 
-![](.\image\logger.png)
+![](./image/logger.png)
 
 双缓冲区设计的日志模块具有以下好处：
 
@@ -324,7 +324,7 @@ int ret = timerfd_settime(mFd, 0, &value, nullptr); // 指定时间一道便会�
 
 ​		执行**onTimer**回调函数时，根据当前系统时间从队列中提取出超时的**TimerEvent**并执行对应的**定时回调函数**，同时把需要重复执行的 **TimerEvent** 的**mArriveTime**加上**mInterval**后再次添加至队列中。
 
-![](.\image\Timer.png)
+![](./image/Timer.png)
 
 定时器**onTimer**所执行的任务包括：
 
@@ -543,7 +543,7 @@ public:
 }
 ```
 
-![](.\image\buffer.png)
+![](./image/buffer.png)
 
 向缓冲区写入数据时向右移动写指针`write`，可写空间不足时扩充缓冲区大小。
 
@@ -791,7 +791,7 @@ protoc order.proto --cpp_out=./
 
 ​		由于通信服务采用TCP传输，TCP是一种基于字节流的传输方式，没有消息边界，需要在应用层定义相应的消息体以保证正确获取消息内容。本项目的消息定义如下，采用包头+包体的形式定义消息边界。
 
-![](.\image\协议格式.png)
+![](./image/协议格式.png)
 
 ​		编码模块负责将上述定义好的消息体写入至TCPBuffer中用于后续发送，解码模块则将接收数据的TCPBuffer中解析后写回响应消息体中，调用接口如下。
 
