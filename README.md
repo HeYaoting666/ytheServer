@@ -992,7 +992,7 @@ for(const auto& respMsg : respMessages) {
 
 1.  **从状态机**状态转移图
 
-![](E:\秋招\简历-秋招\项目\image\http从状态机.png)
+![](./image/http从状态机.png)
 
 从状态机三种状态
 
@@ -1010,7 +1010,7 @@ for(const auto& respMsg : respMessages) {
 
 主状态机的状态转移图：
 
-![](E:\秋招\简历-秋招\项目\image\http主状态机器.png)
+![](./image/http主状态机器.png)
 
 ​		主状态机的初始状态是CHECK_STATE_REQUESTLINE，parse_request_line()函数中解析请求行，当解析请求行成功时，解析请求行内部函数将主状态转移至下一个状态。
 
