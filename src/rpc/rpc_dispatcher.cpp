@@ -7,10 +7,10 @@
 
 namespace ythe {
 
-void RpcDispatcher::Dispatch(const AbstractProtocol::sp& reqPb, const AbstractProtocol::sp& respPb, IPNetAddr::sp localAddr, IPNetAddr::sp peerAddr)
+void RpcDispatcher::Dispatch(const AbstractProtocol::sp& reqMessage, const AbstractProtocol::sp& respMessage, IPNetAddr::sp localAddr, IPNetAddr::sp peerAddr)
 {
-    auto req = std::dynamic_pointer_cast<TinyPBProtocol>(reqPb);
-    auto resp = std::dynamic_pointer_cast<TinyPBProtocol>(respPb);
+    auto req = std::dynamic_pointer_cast<TinyPBProtocol>(reqMessage);
+    auto resp = std::dynamic_pointer_cast<TinyPBProtocol>(respMessage);
     resp->mMsgId = req->mMsgId;
     resp->mMethodName = req->mMethodName;
 
@@ -41,15 +41,15 @@ void RpcDispatcher::Dispatch(const AbstractProtocol::sp& reqPb, const AbstractPr
     }
 
     // 反序列化，将请求体 req 中的 pbData 反序列化
-    auto reqMsg = service->GetRequestPrototype(method).New();
-    auto respMsg = service->GetResponsePrototype(method).New();
-    if(!reqMsg->ParseFromString(req->mPbData)) {
+    auto reqPb = service->GetRequestPrototype(method).New();
+    auto respPb = service->GetResponsePrototype(method).New();
+    if(!reqPb->ParseFromString(req->mPbData)) {
         ERRORLOG("%s | deserialize error", req->mMsgId.c_str())
         setTinyPBError(resp, ERROR_FAILED_DESERIALIZE, "deserialize error");
-        delete reqMsg;
+        delete reqPb;
         return;
     }
-    INFOLOG("%s | get rpc request[%s]", req->mMsgId.c_str(), reqMsg->ShortDebugString().c_str())
+    INFOLOG("%s | get rpc request[%s]", req->mMsgId.c_str(), reqPb->ShortDebugString().c_str())
 
     // 初始化 rpcController
     auto rpcController = new RpcController();
@@ -58,23 +58,23 @@ void RpcDispatcher::Dispatch(const AbstractProtocol::sp& reqPb, const AbstractPr
     rpcController->SetMsgId(req->mMsgId);
 
     // 初始化 rpcClosure
-    auto rpcClosure = new RpcClosure([reqMsg, req, respMsg, resp]() {
-        if( !respMsg->SerializeToString(&(resp->mPbData)) ) {
-            ERRORLOG("%s | serialize error, origin message [%s]", req->mMsgId.c_str(), respMsg->ShortDebugString().c_str())
+    auto rpcClosure = new RpcClosure([reqPb, req, respPb, resp]() {
+        if( !respPb->SerializeToString(&(resp->mPbData)) ) {
+            ERRORLOG("%s | serialize error, origin message [%s]", req->mMsgId.c_str(), respPb->ShortDebugString().c_str())
             setTinyPBError(resp, ERROR_FAILED_SERIALIZE, "serialize error");
         }
         else {
             resp->mErrCode = 0;
             resp->mErrInfo = "";
-            INFOLOG("%s | dispatch success, request[%s], response[%s]", req->mMsgId.c_str(), reqMsg->ShortDebugString().c_str(), respMsg->ShortDebugString().c_str())
+            INFOLOG("%s | dispatch success, request[%s], response[%s]", req->mMsgId.c_str(), reqPb->ShortDebugString().c_str(), respPb->ShortDebugString().c_str())
         }
     });
 
     // 调用 rpc 方法
-    service->CallMethod(method, rpcController, reqMsg, respMsg, rpcClosure);
+    service->CallMethod(method, rpcController, reqPb, respPb, rpcClosure);
     delete rpcController;
-    delete reqMsg;
-    delete respMsg;
+    delete reqPb;
+    delete respPb;
 }
 
 void RpcDispatcher::RegisterService(const serviceSp& service)

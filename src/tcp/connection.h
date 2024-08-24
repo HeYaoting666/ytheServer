@@ -15,8 +15,7 @@ enum TCPConnectionType {
 enum TCPConnectionState {
     NotConnected = 1,
     Connected    = 2,
-    HalfClosing  = 3,
-    Closed       = 4,
+    Closed       = 3,
 };
 
 class TCPConnection

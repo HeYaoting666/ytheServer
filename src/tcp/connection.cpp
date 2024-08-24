@@ -153,13 +153,13 @@ void TCPConnection::execute()
 
     // 从 RecvBuffer 里 decode 得到 reqMessages 对象
     mCoder->Decode(mRecvBuffer, reqMessages);
-    for(auto& req: reqMessages) {
-        INFOLOG("success get request[%s] from client[%s]", req->mMsgId.c_str(), mPeerAddr->ToString().c_str())
+    for(auto& reqMessage: reqMessages) {
+        INFOLOG("success get request[%s] from client[%s]", reqMessage->mMsgId.c_str(), mPeerAddr->ToString().c_str())
 
-        // 针对每一个请求，调用 rpc 方法，获取 resp
-        std::shared_ptr<TinyPBProtocol> resp = std::make_shared<TinyPBProtocol>();
-        RpcDispatcher::GetInstance()->Dispatch(req, resp, mLocalAddr, mPeerAddr);
-        respMessages.emplace_back(resp);
+        // 针对每一个请求，调用 rpc 方法，获取 respMessage
+        std::shared_ptr<TinyPBProtocol> respMessage = std::make_shared<TinyPBProtocol>();
+        RpcDispatcher::GetInstance()->Dispatch(reqMessage, respMessage, mLocalAddr, mPeerAddr);
+        respMessages.emplace_back(respMessage);
     }
     // 消息写回，将响应体 respMessages 放入到发送缓冲区，监听可写事件回包
     mCoder->Encode(respMessages, mSendBuffer);

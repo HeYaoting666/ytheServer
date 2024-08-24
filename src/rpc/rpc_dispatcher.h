@@ -31,7 +31,7 @@ private:
     ~RpcDispatcher() = default;
 
 public:
-    void Dispatch(const AbstractProtocol::sp& reqPb, const AbstractProtocol::sp& respPb, IPNetAddr::sp localAddr, IPNetAddr::sp peerAddr);
+    void Dispatch(const AbstractProtocol::sp& reqMessage, const AbstractProtocol::sp& respMessage, IPNetAddr::sp localAddr, IPNetAddr::sp peerAddr);
 
     // 注册prc服务对象
     void RegisterService(const serviceSp& service);

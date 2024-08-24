@@ -13,13 +13,9 @@ TCPServer::TCPServer(const IPNetAddr::sp& localAddrr)
     mAcceptor = std::make_shared<TCPAcceptor>(localAddrr);
     mLocalAddr = mAcceptor->GetLocalAddr();
 
-    // 初始化 主线程 EventLoop
-    mEventLoop = new EventLoop();
-
     // 初始化 监听套接字事件 mListenEvent 不使用ET模式, 加入到epoll事件表中
     mListenEvent = new FdEvent(mAcceptor->GetListenFd());
     mListenEvent->SetFdEvent(TriggerEvent::IN_EVENT, std::bind(&TCPServer::onAccept, this));
-    mEventLoop->AddFdEventToEpoll(mListenEvent);
 
     // 初始化 从线程 IOThreadGroup
     mIOThreadPool = IOThreadPool::GetInstance();
@@ -27,6 +23,10 @@ TCPServer::TCPServer(const IPNetAddr::sp& localAddrr)
 
     // 初始化 定时器事件(日志写入，清除断开连接)
     mTimerEvent = std::make_shared<TimerEvent>(10000, true, std::bind(&TCPServer::onClearClientTimerFunc, this));
+
+    // 初始化 主线程 EventLoop
+    mEventLoop = new EventLoop();
+    mEventLoop->AddFdEventToEpoll(mListenEvent);
     mEventLoop->AddTimerEvent(mTimerEvent);
     mEventLoop->AddTimerEvent(Logger::GetInstance()->GetTimeEvent());
 
